@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 // DELETE /api/folders/:id
 export async function DELETE(
   _req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await auth();
   if (!session?.user) {
@@ -15,8 +15,10 @@ export async function DELETE(
     return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
   }
 
+  const resolvedParams = await params;
+
   const folder = await prisma.folder.findUnique({
-    where: { id: params.id },
+    where: { id: resolvedParams.id },
     include: {
       _count: { select: { files: true, children: true } },
     },
@@ -35,7 +37,6 @@ export async function DELETE(
     );
   }
 
-  // Manager só exclui pasta que ele criou; admin exclui qualquer uma
   if (
     session.user.role === "manager" &&
     folder.createdById !== session.user.id
@@ -43,14 +44,14 @@ export async function DELETE(
     return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
   }
 
-  await prisma.folder.delete({ where: { id: params.id } });
+  await prisma.folder.delete({ where: { id: resolvedParams.id } });
   return NextResponse.json({ success: true });
 }
 
-// PATCH /api/folders/:id — renomeia subpasta
+// PATCH /api/folders/:id
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await auth();
   if (!session?.user) {
@@ -60,7 +61,9 @@ export async function PATCH(
     return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
   }
 
-  const folder = await prisma.folder.findUnique({ where: { id: params.id } });
+  const resolvedParams = await params;
+
+  const folder = await prisma.folder.findUnique({ where: { id: resolvedParams.id } });
   if (!folder) return NextResponse.json({ error: "Não encontrada" }, { status: 404 });
   if (folder.isRoot) return NextResponse.json({ error: "Pastas de setor não podem ser renomeadas" }, { status: 403 });
 
@@ -72,7 +75,7 @@ export async function PATCH(
   if (!name?.trim()) return NextResponse.json({ error: "Nome inválido" }, { status: 400 });
 
   const updated = await prisma.folder.update({
-    where: { id: params.id },
+    where: { id: resolvedParams.id },
     data: { name: name.trim() },
   });
 

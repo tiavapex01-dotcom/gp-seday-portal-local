@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 // DELETE /api/communications/:id
 export async function DELETE(
   _req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await auth();
   if (!session?.user) {
@@ -15,15 +15,16 @@ export async function DELETE(
     return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
   }
 
+  const resolvedParams = await params;
+
   const communication = await prisma.communication.findUnique({
-    where: { id: params.id },
+    where: { id: resolvedParams.id },
   });
 
   if (!communication) {
     return NextResponse.json({ error: "Comunicado não encontrado" }, { status: 404 });
   }
 
-  // Manager só exclui comunicados da sua empresa ou que ele mesmo criou
   if (
     session.user.role === "manager" &&
     communication.createdById !== session.user.id &&
@@ -32,14 +33,14 @@ export async function DELETE(
     return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
   }
 
-  await prisma.communication.delete({ where: { id: params.id } });
+  await prisma.communication.delete({ where: { id: resolvedParams.id } });
   return NextResponse.json({ success: true });
 }
 
-// PATCH /api/communications/:id — toggle publicado/pinned
+// PATCH /api/communications/:id — toggle pinned/published
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await auth();
   if (!session?.user) {
@@ -49,8 +50,10 @@ export async function PATCH(
     return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
   }
 
+  const resolvedParams = await params;
+
   const communication = await prisma.communication.findUnique({
-    where: { id: params.id },
+    where: { id: resolvedParams.id },
   });
   if (!communication) {
     return NextResponse.json({ error: "Não encontrado" }, { status: 404 });
@@ -64,9 +67,9 @@ export async function PATCH(
 
   const body = await req.json();
   const updated = await prisma.communication.update({
-    where: { id: params.id },
+    where: { id: resolvedParams.id },
     data: {
-      ...(typeof body.pinned === "boolean" && { pinned: body.pinned }),
+      ...(typeof body.pinned    === "boolean" && { pinned:    body.pinned }),
       ...(typeof body.published === "boolean" && { published: body.published }),
     },
   });

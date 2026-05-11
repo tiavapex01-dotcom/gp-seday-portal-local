@@ -6,15 +6,17 @@ import { supabaseAdmin, STORAGE_BUCKET } from "@/lib/supabase";
 // GET /api/files/download/:id — autenticado, sem acesso ao sistema de arquivos
 export async function GET(
   _req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await auth();
   if (!session?.user) {
     return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
   }
 
+  const resolvedParams = await params;
+
   const file = await prisma.file.findUnique({
-    where: { id: params.id },
+    where: { id: resolvedParams.id },
     include: { folder: { select: { company: true } } },
   });
 
@@ -30,7 +32,6 @@ export async function GET(
     return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
   }
 
-  // Baixa o arquivo do Supabase Storage como Blob (Edge-compatible, sem fs)
   const { data, error } = await supabaseAdmin.storage
     .from(STORAGE_BUCKET)
     .download(file.path);
