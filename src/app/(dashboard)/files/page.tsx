@@ -6,7 +6,7 @@ import FileCard from "@/components/ui/FileCard";
 import CreateFolderForm from "@/components/ui/CreateFolderForm";
 
 interface PageProps {
-  searchParams: { pasta?: string };
+  searchParams: Promise<{ pasta?: string }>;
 }
 
 // Monta breadcrumb: [ { id, name }, ... ] do root até a pasta selecionada
@@ -25,8 +25,11 @@ export default async function FilesPage({ searchParams }: PageProps) {
   const session = await auth();
   if (!session?.user) return null;
 
+  // Resolve a Promise do searchParams (Obrigatório no Next.js 15)
+  const resolvedSearchParams = await searchParams;
+
   const canManage = session.user.role !== "employee";
-  const selectedFolderId = searchParams.pasta ?? null;
+  const selectedFolderId = resolvedSearchParams.pasta ?? null;
 
   // Busca todas as pastas da empresa do usuário
   const allFolders = await prisma.folder.findMany({
