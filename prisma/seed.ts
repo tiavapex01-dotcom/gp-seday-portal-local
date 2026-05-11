@@ -3,17 +3,16 @@ import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
-// Pastas raiz fixas por setor — não podem ser excluídas
 const ROOT_SECTORS = [
+  "Manutenção",
+  "Administrativo",
   "RH",
-  "DP",
-  "SEGURANÇA DO TRABALHO",
-  "MANUTENÇÃO",
-  "SUPRIMENTOS",
-  "LOGÍSTICA",
-  "SGI",
-  "DIRETORIA",
-  "ADM",
+  "Financeiro",
+  "Diretoria",
+  "Segurança do Trabalho",
+  "Suprimentos/Almoxarifado",
+  "Planejamento",
+  "TI",
 ];
 
 const COMPANIES = ["AVAPEX", "SEDAY", "INNOMACH"];
@@ -32,7 +31,7 @@ async function main() {
       }
     }
   }
-  console.log("✅ Pastas raiz criadas para AVAPEX, SEDAY e INNOMACH.");
+  console.log(`✅ ${ROOT_SECTORS.length} pastas raiz criadas por empresa (${COMPANIES.join(", ")}).`);
 
   // Usuários de teste
   await prisma.user.upsert({
@@ -44,7 +43,7 @@ async function main() {
       password: await bcrypt.hash("Admin@123", 12),
       role: "admin",
       company: "SEDAY",
-      sector: "TI",
+      sector: "Administrativo",
     },
   });
 
@@ -57,7 +56,7 @@ async function main() {
       password: await bcrypt.hash("Manager@123", 12),
       role: "manager",
       company: "AVAPEX",
-      sector: "Comercial",
+      sector: "Financeiro",
     },
   });
 
@@ -70,14 +69,14 @@ async function main() {
       password: await bcrypt.hash("Employee@123", 12),
       role: "employee",
       company: "INNOMACH",
-      sector: "Produção",
+      sector: "Manutenção",
     },
   });
 
   console.log("✅ Usuários criados:");
-  console.log("   admin@gruposedaY.com.br          → Admin@123    (admin)");
-  console.log("   manager.avapex@gruposedaY.com.br → Manager@123  (manager)");
-  console.log("   colaborador@gruposedaY.com.br    → Employee@123 (employee)");
+  console.log("   admin@gruposedaY.com.br            → Admin@123    (admin)");
+  console.log("   manager.avapex@gruposedaY.com.br   → Manager@123  (manager)");
+  console.log("   colaborador@gruposedaY.com.br      → Employee@123 (employee)");
 }
 
 main()

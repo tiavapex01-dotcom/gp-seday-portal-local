@@ -74,19 +74,22 @@ model File {
 }
 
 model Communication {
-  id        String   @id @default(cuid())
-  title     String
-  content   String
-  company   String
-  sector    String?
-  pinned    Boolean  @default(false)
-  published Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id           String   @id @default(cuid())
+  title        String
+  content      String
+  company      String
+  sector       String?
+  contactPhone String?
+  contactEmail String?
+  pinned       Boolean  @default(false)
+  published    Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   createdBy   User   @relation("CreatedBy", fields: [createdById], references: [id])
   createdById String
 
   @@index([company])
   @@index([pinned])
+  @@index([sector])
 }

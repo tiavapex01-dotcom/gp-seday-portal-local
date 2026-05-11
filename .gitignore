@@ -9,9 +9,8 @@ node_modules/
 prisma/dev.db
 prisma/dev.db-journal
 
-# Uploads (não versionar arquivos enviados)
-public/uploads/*
-!public/uploads/.gitkeep
+# Uploads privados — NUNCA versionar arquivos enviados
+private_uploads/
 
 # Env
 .env

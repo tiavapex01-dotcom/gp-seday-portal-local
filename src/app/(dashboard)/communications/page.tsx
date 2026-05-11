@@ -19,6 +19,7 @@ export default async function CommunicationsPage() {
       ],
     },
     orderBy: [{ pinned: "desc" }, { createdAt: "desc" }],
+    take: 50,
     include: { createdBy: { select: { name: true } } },
   });
 
@@ -40,7 +41,18 @@ export default async function CommunicationsPage() {
         {communications.map((c) => (
           <CommunicationCard
             key={c.id}
-            item={c}
+            item={{
+              id:           c.id,
+              title:        c.title,
+              content:      c.content,
+              company:      c.company,
+              sector:       c.sector,
+              contactPhone: c.contactPhone,
+              contactEmail: c.contactEmail,
+              pinned:       c.pinned,
+              createdAt:    c.createdAt,
+              createdBy:    c.createdBy,
+            }}
             canManage={canManage}
           />
         ))}
