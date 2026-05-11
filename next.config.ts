@@ -1,12 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Permite servir arquivos de public/uploads/ diretamente
-  // Não é necessário configuração extra para /public
-  experimental: {
-    serverActions: {
-      bodySizeLimit: "52mb",
-    },
+  // Necessário para o @cloudflare/next-on-pages processar corretamente
+  // Sem 'standalone' e sem serverExternalPackages conflitantes
+  images: {
+    unoptimized: true, // Cloudflare Pages não suporta Image Optimization nativa do Next.js
   },
 };
 

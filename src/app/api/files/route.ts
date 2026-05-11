@@ -1,18 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { writeFile, mkdir } from "fs/promises";
-import { existsSync } from "fs";
-import path from "path";
+import { supabaseAdmin, STORAGE_BUCKET } from "@/lib/supabase";
 import crypto from "crypto";
-
-// ─── Pasta FORA de /public — inacessível diretamente pelo browser ───────────
-export const UPLOAD_DIR = path.join(process.cwd(), "private_uploads");
 
 const MAX_SIZE_MB = 50;
 
-// Mapa de extensões permitidas → MIME types aceitos
-// A validação dupla (extensão + MIME) evita spoofing de Content-Type
+// Validação dupla: extensão → MIME types aceitos
 const ALLOWED: Record<string, string[]> = {
   ".pdf":  ["application/pdf"],
   ".doc":  ["application/msword"],
@@ -28,11 +22,16 @@ const ALLOWED: Record<string, string[]> = {
   ".txt":  ["text/plain"],
 };
 
+function getExt(filename: string) {
+  const idx = filename.lastIndexOf(".");
+  return idx >= 0 ? filename.slice(idx).toLowerCase() : "";
+}
+
 function validateFile(file: File): string | null {
-  const ext = path.extname(file.name).toLowerCase();
+  const ext = getExt(file.name);
   const allowed = ALLOWED[ext];
   if (!allowed) return `Extensão "${ext}" não é permitida.`;
-  if (!allowed.includes(file.type)) return `O tipo do arquivo (${file.type}) não corresponde à extensão ${ext}.`;
+  if (!allowed.includes(file.type)) return `Tipo do arquivo (${file.type}) não corresponde à extensão ${ext}.`;
   if (file.size / (1024 * 1024) > MAX_SIZE_MB) return `Arquivo excede ${MAX_SIZE_MB} MB.`;
   return null;
 }
@@ -57,7 +56,11 @@ export async function GET(req: NextRequest) {
   const folder = await prisma.folder.findUnique({ where: { id: folderId } });
   if (!folder) return NextResponse.json({ error: "Pasta não encontrada" }, { status: 404 });
 
-  if (session.user.role !== "admin" && folder.company !== session.user.company && folder.company !== "ALL") {
+  if (
+    session.user.role !== "admin" &&
+    folder.company !== "ALL" &&
+    folder.company !== session.user.company
+  ) {
     return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
   }
 
@@ -78,7 +81,7 @@ export async function GET(req: NextRequest) {
   });
 }
 
-// POST /api/files — upload para pasta privada
+// POST /api/files — faz upload para o Supabase Storage (sem fs local)
 export async function POST(req: NextRequest) {
   const session = await auth();
   if (!session?.user) {
@@ -88,16 +91,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
   }
 
-  const formData = await req.formData();
-  const file = formData.get("file") as File | null;
-  const folderId    = formData.get("folderId")    as string;
+  const formData   = await req.formData();
+  const file       = formData.get("file")        as File | null;
+  const folderId   = formData.get("folderId")    as string;
   const description = formData.get("description") as string | null;
 
   if (!file || !folderId) {
     return NextResponse.json({ error: "Arquivo e pasta são obrigatórios" }, { status: 400 });
   }
 
-  // Validação dupla: extensão + MIME
   const validationError = validateFile(file);
   if (validationError) {
     return NextResponse.json({ error: validationError }, { status: 400 });
@@ -107,29 +109,36 @@ export async function POST(req: NextRequest) {
   if (!folder) {
     return NextResponse.json({ error: "Pasta não encontrada" }, { status: 404 });
   }
-
   if (session.user.role === "manager" && folder.company !== session.user.company) {
     return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
   }
 
-  if (!existsSync(UPLOAD_DIR)) {
-    await mkdir(UPLOAD_DIR, { recursive: true });
-  }
-
-  const ext = path.extname(file.name).toLowerCase();
+  const ext        = getExt(file.name);
   const storedName = `${crypto.randomUUID()}${ext}`;
-  const filePath = path.join(UPLOAD_DIR, storedName);
+  const storagePath = `${folder.company}/${folderId}/${storedName}`;
 
-  await writeFile(filePath, Buffer.from(await file.arrayBuffer()));
+  // Envia para o Supabase Storage
+  const buffer = Buffer.from(await file.arrayBuffer());
+  const { error: uploadError } = await supabaseAdmin.storage
+    .from(STORAGE_BUCKET)
+    .upload(storagePath, buffer, {
+      contentType: file.type,
+      upsert: false,
+    });
+
+  if (uploadError) {
+    console.error("Supabase upload error:", uploadError.message);
+    return NextResponse.json({ error: "Falha ao armazenar o arquivo." }, { status: 500 });
+  }
 
   const record = await prisma.file.create({
     data: {
-      name: file.name,
+      name:        file.name,
       storedName,
-      path: storedName, // guarda apenas o nome, não o caminho público
-      mimeType: file.type,
-      size: file.size,
-      company: folder.company,
+      path:        storagePath, // caminho no bucket do Supabase
+      mimeType:    file.type,
+      size:        file.size,
+      company:     folder.company,
       description: description || null,
       folderId,
       uploadedById: session.user.id,
