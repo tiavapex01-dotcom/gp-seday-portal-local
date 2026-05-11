@@ -1,0 +1,89 @@
+import NextAuth, { type DefaultSession } from "next-auth";
+import Credentials from "next-auth/providers/credentials";
+import { PrismaAdapter } from "@auth/prisma-adapter";
+import { prisma } from "@/lib/prisma";
+import bcrypt from "bcryptjs";
+
+// Extende os tipos padrão do NextAuth para incluir role, company e sector
+declare module "next-auth" {
+  interface Session {
+    user: {
+      id: string;
+      role: string;
+      company: string;
+      sector: string | null;
+    } & DefaultSession["user"];
+  }
+  interface User {
+    role: string;
+    company: string;
+    sector: string | null;
+  }
+}
+
+export const { handlers, auth, signIn, signOut } = NextAuth({
+  adapter: PrismaAdapter(prisma),
+  session: { strategy: "jwt" },
+
+  pages: {
+    signIn: "/login",
+    error: "/login",
+  },
+
+  providers: [
+    Credentials({
+      name: "credentials",
+      credentials: {
+        email: { label: "E-mail", type: "email" },
+        password: { label: "Senha", type: "password" },
+      },
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.password) return null;
+
+        const user = await prisma.user.findUnique({
+          where: { email: credentials.email as string },
+        });
+
+        if (!user || !user.active) return null;
+
+        const passwordMatch = await bcrypt.compare(
+          credentials.password as string,
+          user.password
+        );
+        if (!passwordMatch) return null;
+
+        return {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          company: user.company,
+          sector: user.sector,
+        };
+      },
+    }),
+  ],
+
+  callbacks: {
+    async jwt({ token, user }) {
+      // Persiste dados extras no token JWT na criação da sessão
+      if (user) {
+        token.id = user.id;
+        token.role = user.role;
+        token.company = user.company;
+        token.sector = user.sector;
+      }
+      return token;
+    },
+    async session({ session, token }) {
+      // Expõe dados do token para o client via session
+      if (token && session.user) {
+        session.user.id = token.id as string;
+        session.user.role = token.role as string;
+        session.user.company = token.company as string;
+        session.user.sector = token.sector as string | null;
+      }
+      return session;
+    },
+  },
+});

@@ -1,0 +1,91 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      String   @default("employee") // "admin" | "manager" | "employee"
+  company   String   // "AVAPEX" | "SEDAY" | "INNOMACH"
+  sector    String?
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  uploadedFiles   File[]          @relation("UploadedBy")
+  communications  Communication[] @relation("CreatedBy")
+  createdFolders  Folder[]        @relation("FolderCreatedBy")
+
+  @@index([company])
+  @@index([role])
+}
+
+model Folder {
+  id          String   @id @default(cuid())
+  name        String
+  isRoot      Boolean  @default(false) // pastas raiz (setores) — não podem ser excluídas
+  company     String   // "AVAPEX" | "SEDAY" | "INNOMACH" | "ALL"
+  createdAt   DateTime @default(now())
+
+  // Hierarquia: null = pasta raiz de setor
+  parentId    String?
+  parent      Folder?  @relation("SubFolders", fields: [parentId], references: [id], onDelete: Cascade)
+  children    Folder[] @relation("SubFolders")
+
+  // Quem criou (null nas pastas raiz geradas pelo seed)
+  createdById String?
+  createdBy   User?    @relation("FolderCreatedBy", fields: [createdById], references: [id])
+
+  files       File[]
+
+  @@index([parentId])
+  @@index([company])
+}
+
+model File {
+  id          String   @id @default(cuid())
+  name        String
+  storedName  String
+  path        String
+  mimeType    String
+  size        Int
+  description String?
+  company     String
+  sector      String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  folderId     String
+  folder       Folder @relation(fields: [folderId], references: [id])
+
+  uploadedBy   User   @relation("UploadedBy", fields: [uploadedById], references: [id])
+  uploadedById String
+
+  @@index([folderId])
+  @@index([company])
+}
+
+model Communication {
+  id        String   @id @default(cuid())
+  title     String
+  content   String
+  company   String
+  sector    String?
+  pinned    Boolean  @default(false)
+  published Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  createdBy   User   @relation("CreatedBy", fields: [createdById], references: [id])
+  createdById String
+
+  @@index([company])
+  @@index([pinned])
+}
