@@ -1,8 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useSession } from "next-auth/react";
 
 interface FolderOption {
   id: string;
@@ -23,8 +22,7 @@ function buildLabel(folder: FolderOption, folders: FolderOption[]): string {
   return parts.join(" › ");
 }
 
-export default function UploadPage() {
-  const { data: session } = useSession();
+function UploadContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const preSelectedId = searchParams.get("pasta") ?? "";
@@ -41,7 +39,6 @@ export default function UploadPage() {
       .then((r) => r.json())
       .then((data: FolderOption[]) => {
         setFolders(data);
-        // Se veio pasta pré-selecionada pela URL, mantém; senão pega a primeira
         if (!preSelectedId && data.length > 0) setFolderId(data[0].id);
       });
   }, [preSelectedId]);
@@ -65,7 +62,6 @@ export default function UploadPage() {
       setError(data.error || "Erro ao fazer upload.");
       return;
     }
-    // Volta para a pasta onde o arquivo foi enviado
     router.push(`/files?pasta=${folderId}`);
   }
 
@@ -91,7 +87,6 @@ export default function UploadPage() {
             <option value="" disabled>
               Selecione uma pasta...
             </option>
-            {/* Pastas raiz (setores) */}
             {folders
               .filter((f) => f.isRoot)
               .map((root) => {
@@ -162,5 +157,13 @@ export default function UploadPage() {
         </div>
       </form>
     </div>
+  );
+}
+
+export default function UploadPage() {
+  return (
+    <Suspense>
+      <UploadContent />
+    </Suspense>
   );
 }
