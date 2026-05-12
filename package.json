@@ -10,35 +10,33 @@
     "db:push": "prisma db push",
     "db:studio": "prisma studio",
     "db:seed": "tsx prisma/seed.ts",
-    "build:cf": "npx @cloudflare/next-on-pages"
+    "build:cf": "opennextjs-cloudflare build"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.7.2",
-    "@prisma/adapter-pg": "^7.8.0",
     "@prisma/client": "^5.22.0",
     "@supabase/supabase-js": "^2.105.4",
     "bcryptjs": "^2.4.3",
     "next": "15.1.0",
     "next-auth": "^5.0.0-beta.25",
-    "pg": "^8.20.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "sharp": "^0.33.5"
   },
   "devDependencies": {
-    "@cloudflare/next-on-pages": "^1.13.16",
     "@types/bcryptjs": "^2.4.6",
     "@types/node": "^20",
-    "@types/pg": "^8.20.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "autoprefixer": "^10.0.1",
     "eslint": "^8",
     "eslint-config-next": "15.1.0",
+    "opennextjs-cloudflare": "^1.0.0",
     "postcss": "^8",
     "prisma": "^5.22.0",
     "tailwindcss": "^3.4.1",
     "tsx": "^4.19.2",
-    "typescript": "^5"
+    "typescript": "^5",
+    "wrangler": "^4.90.1"
   }
 }
