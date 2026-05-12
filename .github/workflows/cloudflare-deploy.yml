@@ -47,3 +47,4 @@ jobs:
           projectName: gp-seday-portal
           directory: .vercel/output/static
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+          wranglerVersion: '3'
