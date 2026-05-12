@@ -1,4 +1,4 @@
-name = "gp-seday-portal"
+name = "gp-seday-portal-local"
 main = ".open-next/worker.js"
 compatibility_date = "2026-05-12"
 compatibility_flags = ["nodejs_compat"]
