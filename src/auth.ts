@@ -4,7 +4,6 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 
-// Extende os tipos padrão do NextAuth para incluir role, company e sector
 declare module "next-auth" {
   interface Session {
     user: {
@@ -21,6 +20,11 @@ declare module "next-auth" {
   }
 }
 
+// Sanitizes a raw login identifier to a digit-only string (for CPF/phone lookups)
+function sanitizeDigits(raw: string): string {
+  return raw.replace(/\D/g, "");
+}
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
   session: { strategy: "jwt" },
@@ -34,31 +38,37 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     Credentials({
       name: "credentials",
       credentials: {
-        email: { label: "E-mail", type: "email" },
-        password: { label: "Senha", type: "password" },
+        identifier: { label: "E-mail, CPF ou Celular", type: "text" },
+        password:   { label: "Senha", type: "password" },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) return null;
+        const raw      = (credentials?.identifier as string | undefined)?.trim() ?? "";
+        const password = (credentials?.password  as string | undefined) ?? "";
 
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email as string },
+        if (!raw || !password) return null;
+
+        const digits = sanitizeDigits(raw);
+        const isEmail = raw.includes("@");
+
+        // Single query — try email, CPF and phone simultaneously
+        const user = await prisma.user.findFirst({
+          where: isEmail
+            ? { email: raw.toLowerCase() }
+            : { OR: [{ cpf: digits }, { phone: digits }] },
         });
 
         if (!user || !user.active) return null;
 
-        const passwordMatch = await bcrypt.compare(
-          credentials.password as string,
-          user.password
-        );
+        const passwordMatch = await bcrypt.compare(password, user.password);
         if (!passwordMatch) return null;
 
         return {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          role: user.role,
+          id:      user.id,
+          name:    user.name,
+          email:   user.email,
+          role:    user.role,
           company: user.company,
-          sector: user.sector,
+          sector:  user.sector,
         };
       },
     }),
@@ -66,22 +76,20 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
   callbacks: {
     async jwt({ token, user }) {
-      // Persiste dados extras no token JWT na criação da sessão
       if (user) {
-        token.id = user.id;
-        token.role = user.role;
+        token.id      = user.id;
+        token.role    = user.role;
         token.company = user.company;
-        token.sector = user.sector;
+        token.sector  = user.sector;
       }
       return token;
     },
     async session({ session, token }) {
-      // Expõe dados do token para o client via session
       if (token && session.user) {
-        session.user.id = token.id as string;
-        session.user.role = token.role as string;
+        session.user.id      = token.id      as string;
+        session.user.role    = token.role    as string;
         session.user.company = token.company as string;
-        session.user.sector = token.sector as string | null;
+        session.user.sector  = token.sector  as string | null;
       }
       return session;
     },

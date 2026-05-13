@@ -5,12 +5,13 @@ import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 function LoginContent() {
-  const router = useRouter();
+  const router       = useRouter();
   const searchParams = useSearchParams();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
+
+  const [identifier, setIdentifier] = useState("");
+  const [password,   setPassword]   = useState("");
+  const [error,      setError]      = useState("");
+  const [loading,    setLoading]    = useState(false);
 
   const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
 
@@ -20,7 +21,7 @@ function LoginContent() {
     setLoading(true);
 
     const result = await signIn("credentials", {
-      email,
+      identifier,
       password,
       redirect: false,
     });
@@ -28,7 +29,7 @@ function LoginContent() {
     setLoading(false);
 
     if (result?.error) {
-      setError("E-mail ou senha inválidos.");
+      setError("Credenciais inválidas. Verifique e-mail/CPF/celular e senha.");
       return;
     }
     router.push(callbackUrl);
@@ -44,17 +45,18 @@ function LoginContent() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-              E-mail corporativo
+            <label htmlFor="identifier" className="block text-sm font-medium text-gray-700 mb-1">
+              E-mail, CPF ou Celular
             </label>
             <input
-              id="email"
-              type="email"
+              id="identifier"
+              type="text"
               required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              autoComplete="username"
+              value={identifier}
+              onChange={(e) => setIdentifier(e.target.value)}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#2554a0]"
-              placeholder="seu@gruposedaY.com.br"
+              placeholder="email@empresa.com / 000.000.000-00 / (11) 90000-0000"
             />
           </div>
 
@@ -66,6 +68,7 @@ function LoginContent() {
               id="password"
               type="password"
               required
+              autoComplete="current-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#2554a0]"
