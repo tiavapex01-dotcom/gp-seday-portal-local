@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
-import { createFolder, listFolders } from "@/services/folder.service";
-import { createFolderSchema } from "@/schemas/folder.schema";
+import { createFolder, createRootFolder, listFolders } from "@/services/folder.service";
+import { createFolderSchema, createRootFolderSchema } from "@/schemas/folder.schema";
 
 export async function GET(req: NextRequest) {
   const session = await auth();
@@ -28,12 +28,20 @@ export async function POST(req: NextRequest) {
   if (session.user.role === "employee") return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
 
   try {
-    const body      = await req.json();
+    const body = await req.json();
+
+    if (body.isRoot === true) {
+      const validated = createRootFolderSchema.parse(body);
+      if (session.user.role === "manager" && validated.company !== session.user.company) {
+        return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
+      }
+      const folder = await createRootFolder(validated, session.user.id);
+      return NextResponse.json(folder, { status: 201 });
+    }
+
     const validated = createFolderSchema.parse(body);
+    const folder    = await createFolder(validated, session.user.id);
 
-    const folder = await createFolder(validated, session.user.id);
-
-    // Manager can only create in their own company — validated after parent lookup
     if (session.user.role === "manager" && folder.company !== session.user.company) {
       return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
     }

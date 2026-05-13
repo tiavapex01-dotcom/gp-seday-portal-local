@@ -4,6 +4,7 @@ import Link from "next/link";
 import FolderTree, { type FolderNode } from "@/components/ui/FolderTree";
 import FileCard from "@/components/ui/FileCard";
 import CreateFolderForm from "@/components/ui/CreateFolderForm";
+import CreateSectorButton from "@/components/ui/CreateSectorButton";
 
 interface PageProps {
   searchParams: Promise<{ pasta?: string }>;
@@ -112,6 +113,9 @@ export default async function FilesPage({ searchParams }: PageProps) {
             <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider px-2 py-1.5">
               {session.user.company}
             </p>
+            {canManage && (
+              <CreateSectorButton company={session.user.company} />
+            )}
             <FolderTree
               folders={folderNodes}
               selectedId={selectedFolderId}

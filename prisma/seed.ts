@@ -22,7 +22,7 @@ async function main() {
   for (const company of COMPANIES) {
     for (const sector of ROOT_SECTORS) {
       const existing = await prisma.folder.findFirst({
-        where: { name: sector, company, parentId: null },
+        where: { name: { equals: sector, mode: "insensitive" }, company, parentId: null },
       });
       if (!existing) {
         await prisma.folder.create({

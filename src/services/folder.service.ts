@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import type { CreateFolderInput, RenameFolderInput } from "@/schemas/folder.schema";
+import type { CreateFolderInput, CreateRootFolderInput, RenameFolderInput } from "@/schemas/folder.schema";
 
 export async function listFolders(company: string) {
   return prisma.folder.findMany({
@@ -27,6 +27,27 @@ export async function createFolder(input: CreateFolderInput, createdById: string
       isRoot:      false,
       company:     parent.company,
       parentId:    input.parentId,
+      createdById,
+    },
+  });
+}
+
+export async function createRootFolder(input: CreateRootFolderInput, createdById: string) {
+  const duplicate = await prisma.folder.findFirst({
+    where: {
+      name:    { equals: input.name.trim(), mode: "insensitive" },
+      company: input.company,
+      isRoot:  true,
+    },
+  });
+  if (duplicate) throw new Error("Já existe um setor com esse nome nesta empresa");
+
+  return prisma.folder.create({
+    data: {
+      name:       input.name.trim(),
+      isRoot:     true,
+      company:    input.company,
+      parentId:   null,
       createdById,
     },
   });
