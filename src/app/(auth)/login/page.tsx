@@ -5,13 +5,12 @@ import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 function LoginContent() {
-  const router       = useRouter();
+  const router = useRouter();
   const searchParams = useSearchParams();
-
   const [identifier, setIdentifier] = useState("");
-  const [password,   setPassword]   = useState("");
-  const [error,      setError]      = useState("");
-  const [loading,    setLoading]    = useState(false);
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
 
@@ -29,7 +28,7 @@ function LoginContent() {
     setLoading(false);
 
     if (result?.error) {
-      setError("Credenciais inválidas. Verifique e-mail/CPF/celular e senha.");
+      setError("Credenciais inválidas ou usuário inativo.");
       return;
     }
     router.push(callbackUrl);
@@ -52,11 +51,10 @@ function LoginContent() {
               id="identifier"
               type="text"
               required
-              autoComplete="username"
               value={identifier}
               onChange={(e) => setIdentifier(e.target.value)}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#2554a0]"
-              placeholder="email@empresa.com / 000.000.000-00 / (11) 90000-0000"
+              placeholder="seu@email.com, 123.456.789-00 ou (11) 99999-9999"
             />
           </div>
 
@@ -68,7 +66,6 @@ function LoginContent() {
               id="password"
               type="password"
               required
-              autoComplete="current-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#2554a0]"
