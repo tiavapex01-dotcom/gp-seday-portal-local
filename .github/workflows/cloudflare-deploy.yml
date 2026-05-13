@@ -11,8 +11,6 @@ jobs:
     permissions:
       contents: read
       deployments: write
-    env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
     steps:
       - name: Checkout
@@ -26,25 +24,14 @@ jobs:
       - name: Instalar dependências
         run: npm ci
 
-      - name: Patch pg para pg-cloudflare opcional
-        run: |
-          PG_STREAM="node_modules/pg/lib/stream.js"
-          if grep -q "require('pg-cloudflare')" "$PG_STREAM"; then
-            echo "Aplicando patch no pg/lib/stream.js..."
-            sed -i "s/const { CloudflareSocket } = require('pg-cloudflare')/let CloudflareSocket; try { CloudflareSocket = require('pg-cloudflare').CloudflareSocket; } catch(e) {}/g" "$PG_STREAM"
-            echo "Patch aplicado com sucesso."
-          else
-            echo "Patch já aplicado ou não necessário."
-          fi
-
       - name: Gerar Prisma Client
         run: npx prisma generate
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           DIRECT_URL: ${{ secrets.DIRECT_URL }}
 
-      - name: Build com OpenNext
-        run: npx opennextjs-cloudflare build
+      - name: Build
+        run: npm run build
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           DIRECT_URL: ${{ secrets.DIRECT_URL }}
@@ -52,10 +39,3 @@ jobs:
           NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-
-      - name: Deploy no Cloudflare
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: deploy
