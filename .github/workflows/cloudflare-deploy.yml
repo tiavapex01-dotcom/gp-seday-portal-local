@@ -26,18 +26,15 @@ jobs:
       - name: Instalar dependências
         run: npm ci
 
-      - name: Garantir dist do pg-cloudflare
+      - name: Patch pg para pg-cloudflare opcional
         run: |
-          PG_CF_DIR="node_modules/pg-cloudflare"
-          if [ ! -f "$PG_CF_DIR/dist/index.js" ]; then
-            echo "pg-cloudflare dist ausente, buildando..."
-            cd "$PG_CF_DIR"
-            npm install --ignore-scripts
-            npx tsc --outDir dist --module commonjs --target es2020 --skipLibCheck src/index.ts 2>/dev/null || \
-            mkdir -p dist && echo "module.exports = {};" > dist/index.js
-            cd -
+          PG_STREAM="node_modules/pg/lib/stream.js"
+          if grep -q "require('pg-cloudflare')" "$PG_STREAM"; then
+            echo "Aplicando patch no pg/lib/stream.js..."
+            sed -i "s/const { CloudflareSocket } = require('pg-cloudflare')/let CloudflareSocket; try { CloudflareSocket = require('pg-cloudflare').CloudflareSocket; } catch(e) {}/g" "$PG_STREAM"
+            echo "Patch aplicado com sucesso."
           else
-            echo "pg-cloudflare dist já existe."
+            echo "Patch já aplicado ou não necessário."
           fi
 
       - name: Gerar Prisma Client
