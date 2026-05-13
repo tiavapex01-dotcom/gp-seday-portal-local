@@ -2,43 +2,64 @@ import { prisma } from "@/lib/prisma";
 import type {
   CreateCommunicationInput,
   UpdateCommunicationInput,
-  ListCommunicationsInput,
 } from "@/schemas/communication.schema";
 
-export async function listCommunications(
-  input: ListCommunicationsInput,
-  userCompany: string,
-  userSector: string | null
-) {
-  const { page, limit, sector } = input;
+const BASE_INCLUDE = { createdBy: { select: { name: true } } } as const;
+
+// All published communications — no company/sector filter
+export async function getAllCommunications() {
+  return prisma.communication.findMany({
+    where:   { published: true },
+    orderBy: [{ pinned: "desc" }, { createdAt: "desc" }],
+    include: BASE_INCLUDE,
+  });
+}
+
+export async function getPinnedCommunications(limit?: number) {
+  return prisma.communication.findMany({
+    where:   { published: true, pinned: true },
+    orderBy: { createdAt: "desc" },
+    ...(limit ? { take: limit } : {}),
+    include: BASE_INCLUDE,
+  });
+}
+
+export async function getRecentCommunications(limit = 10) {
+  return prisma.communication.findMany({
+    where:   { published: true },
+    orderBy: { createdAt: "desc" },
+    take:    limit,
+    include: BASE_INCLUDE,
+  });
+}
+
+export async function listCommunicationsForApi(opts: {
+  pinned?: boolean;
+  page:    number;
+  limit:   number;
+  sector?: string;
+}) {
+  const { pinned, page, limit, sector } = opts;
   const skip = (page - 1) * limit;
 
-  const baseWhere = {
+  const where = {
     published: true,
-    OR: [
-      { company: userCompany, sector: null },
-      { company: userCompany, sector: userSector ?? undefined },
-      { company: "ALL" },
-    ],
+    ...(pinned  !== undefined && { pinned }),
+    ...(sector                && { sector }),
   };
 
-  const where = sector ? { ...baseWhere, sector } : baseWhere;
-
-  const [communications, total] = await Promise.all([
+  const [data, total] = await Promise.all([
     prisma.communication.findMany({
       where,
       orderBy: [{ pinned: "desc" }, { createdAt: "desc" }],
       skip,
-      take: limit,
-      include: { createdBy: { select: { name: true } } },
+      take:    limit,
+      include: BASE_INCLUDE,
     }),
     prisma.communication.count({ where }),
   ]);
 
-  return {
-    data: communications,
-    meta: { total, page, limit, pages: Math.ceil(total / limit) },
-  };
+  return { data, meta: { total, page, limit, pages: Math.ceil(total / limit) } };
 }
 
 export async function createCommunication(

@@ -1,7 +1,7 @@
 import { auth } from "@/auth";
-import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import CommunicationCard from "@/components/ui/CommunicationCard";
+import { getAllCommunications } from "@/services/communication.service";
 
 export default async function CommunicationsPage() {
   const session = await auth();
@@ -9,22 +9,13 @@ export default async function CommunicationsPage() {
 
   const canManage = session.user.role !== "employee";
 
-  const communications = await prisma.communication.findMany({
-    where: {
-      published: true,
-      OR: [
-        { company: session.user.company, sector: null },
-        { company: session.user.company, sector: session.user.sector ?? undefined },
-        { company: "ALL" },
-      ],
-    },
-    orderBy: [{ pinned: "desc" }, { createdAt: "desc" }],
-    take: 50,
-    include: { createdBy: { select: { name: true } } },
-  });
+  const all     = await getAllCommunications();
+  const fixados = all.filter((c) => c.pinned);
+  const demais  = all.filter((c) => !c.pinned);
 
   return (
     <div>
+      {/* Cabeçalho */}
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-gray-800">Comunicados</h1>
         {canManage && (
@@ -37,32 +28,69 @@ export default async function CommunicationsPage() {
         )}
       </div>
 
-      <div className="space-y-4">
-        {communications.map((c) => (
-          <CommunicationCard
-            key={c.id}
-            item={{
-              id:           c.id,
-              title:        c.title,
-              content:      c.content,
-              company:      c.company,
-              sector:       c.sector,
-              contactPhone: c.contactPhone,
-              contactEmail: c.contactEmail,
-              pinned:       c.pinned,
-              createdAt:    c.createdAt,
-              createdBy:    c.createdBy,
-            }}
-            canManage={canManage}
-          />
-        ))}
+      {all.length === 0 && (
+        <div className="bg-white border border-dashed border-gray-300 rounded-xl p-10 text-center">
+          <p className="text-gray-400 text-sm">Nenhum comunicado disponível.</p>
+        </div>
+      )}
 
-        {communications.length === 0 && (
-          <div className="bg-white border border-dashed border-gray-300 rounded-xl p-10 text-center">
-            <p className="text-gray-400 text-sm">Nenhum comunicado disponível.</p>
+      {/* Fixados */}
+      {fixados.length > 0 && (
+        <section className="mb-8">
+          <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+            📌 Fixados
+          </h2>
+          <div className="space-y-4">
+            {fixados.map((c) => (
+              <CommunicationCard
+                key={c.id}
+                item={{
+                  id:           c.id,
+                  title:        c.title,
+                  content:      c.content,
+                  company:      c.company,
+                  sector:       c.sector,
+                  contactPhone: c.contactPhone,
+                  contactEmail: c.contactEmail,
+                  pinned:       c.pinned,
+                  createdAt:    c.createdAt,
+                  createdBy:    c.createdBy,
+                }}
+                canManage={canManage}
+              />
+            ))}
           </div>
-        )}
-      </div>
+        </section>
+      )}
+
+      {/* Todos os demais */}
+      {demais.length > 0 && (
+        <section>
+          <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">
+            Todos os Comunicados
+          </h2>
+          <div className="space-y-4">
+            {demais.map((c) => (
+              <CommunicationCard
+                key={c.id}
+                item={{
+                  id:           c.id,
+                  title:        c.title,
+                  content:      c.content,
+                  company:      c.company,
+                  sector:       c.sector,
+                  contactPhone: c.contactPhone,
+                  contactEmail: c.contactEmail,
+                  pinned:       c.pinned,
+                  createdAt:    c.createdAt,
+                  createdBy:    c.createdBy,
+                }}
+                canManage={canManage}
+              />
+            ))}
+          </div>
+        </section>
+      )}
     </div>
   );
 }
