@@ -11,6 +11,8 @@ jobs:
     permissions:
       contents: read
       deployments: write
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
     steps:
       - name: Checkout
@@ -23,6 +25,20 @@ jobs:
 
       - name: Instalar dependências
         run: npm ci
+
+      - name: Garantir dist do pg-cloudflare
+        run: |
+          PG_CF_DIR="node_modules/pg-cloudflare"
+          if [ ! -f "$PG_CF_DIR/dist/index.js" ]; then
+            echo "pg-cloudflare dist ausente, buildando..."
+            cd "$PG_CF_DIR"
+            npm install --ignore-scripts
+            npx tsc --outDir dist --module commonjs --target es2020 --skipLibCheck src/index.ts 2>/dev/null || \
+            mkdir -p dist && echo "module.exports = {};" > dist/index.js
+            cd -
+          else
+            echo "pg-cloudflare dist já existe."
+          fi
 
       - name: Gerar Prisma Client
         run: npx prisma generate
