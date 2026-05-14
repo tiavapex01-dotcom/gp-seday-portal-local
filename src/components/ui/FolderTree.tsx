@@ -1,3 +1,14 @@
+/**
+ * @context FolderTree.tsx
+ * @what    Recursive folder tree component for the files page sidebar
+ * @purpose Render the full folder hierarchy with expand/collapse, active selection, and inline delete
+ * @depends FolderNode type (exported), useRouter (for refresh after delete)
+ * @usedby  files/page.tsx
+ * @rules   Delete requires folder to be empty; root folders (isRoot=true) cannot be deleted
+ *          FolderItem has its own confirm-delete state — intentionally NOT using ConfirmDeleteButton
+ *          due to isSelected colour variation and stopPropagation requirement
+ * @layer   component
+ */
 "use client";
 
 import Link from "next/link";

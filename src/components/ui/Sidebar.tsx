@@ -1,3 +1,12 @@
+/**
+ * @context Sidebar.tsx
+ * @what    App shell sidebar with company badge, nav links, and logout button
+ * @purpose Primary navigation visible on all dashboard pages
+ * @depends next-auth/react (signOut), usePathname, permissions (COMPANY_COLORS inline)
+ * @usedby  src/app/(dashboard)/layout.tsx
+ * @rules   Upload and Admin links are conditionally shown based on role; active link uses bg-white/20
+ * @layer   component
+ */
 "use client";
 
 import Link from "next/link";

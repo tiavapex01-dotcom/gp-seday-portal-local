@@ -1,3 +1,12 @@
+/**
+ * @context admin/page.tsx
+ * @what    Admin panel — lists all users in a table with role/status badges
+ * @purpose Allow admin to review and manage all user accounts across all companies
+ * @depends auth, prisma (user list), Link (to /admin/users/new)
+ * @usedby  Sidebar nav ("Administração" link, admin only)
+ * @rules   Redirects non-admin to /dashboard; queries Prisma directly (no pagination for now)
+ * @layer   page
+ */
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";

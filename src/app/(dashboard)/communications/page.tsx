@@ -1,3 +1,12 @@
+/**
+ * @context communications/page.tsx
+ * @what    Full communications board — pinned section on top, all others below
+ * @purpose Display all published communications to every authenticated user regardless of company
+ * @depends auth, communication.service (getAllCommunications), CommunicationCard
+ * @usedby  Sidebar nav ("Comunicados" link)
+ * @rules   getAllCommunications has NO company filter — intentional; manager/admin see "+ Novo Comunicado"
+ * @layer   page
+ */
 import { auth } from "@/auth";
 import Link from "next/link";
 import CommunicationCard from "@/components/ui/CommunicationCard";

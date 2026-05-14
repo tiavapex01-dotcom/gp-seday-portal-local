@@ -1,3 +1,12 @@
+/**
+ * @context files/page.tsx
+ * @what    File explorer — sidebar folder tree + main area with subfolders and file grid
+ * @purpose Allow users to browse the company folder structure and download files
+ * @depends auth, prisma (folders + files), FolderTree, FileCard, CreateFolderForm, CreateSectorButton
+ * @usedby  Sidebar nav ("Arquivos" link)
+ * @rules   Folder tree is scoped to session.user.company; ?pasta= query param selects the active folder
+ * @layer   page
+ */
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";

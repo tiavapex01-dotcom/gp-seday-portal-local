@@ -1,3 +1,12 @@
+/**
+ * @context dashboard/page.tsx
+ * @what    Home page after login — summary stats, pinned communications, recent communications
+ * @purpose Give users a quick overview of available files, active comms, and their company info
+ * @depends auth, prisma (file/comm counts), communication.service (getPinned/getRecent), CommunicationCard
+ * @usedby  Dashboard layout (default route after login)
+ * @rules   Shows up to 3 pinned + 3 recent comms; canManage = role !== employee
+ * @layer   page
+ */
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
