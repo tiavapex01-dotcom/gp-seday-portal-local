@@ -1,3 +1,12 @@
+/**
+ * @context auth.ts
+ * @what    NextAuth.js v5 configuration — CredentialsProvider with multi-identifier login
+ * @purpose Authenticate users by email, CPF (11 digits), or phone (11 digits)
+ * @depends prisma, bcryptjs, @auth/prisma-adapter, next-auth
+ * @usedby  src/app/api/auth/[...nextauth]/route.ts, middleware.ts, all server components via auth()
+ * @rules   JWT strategy (not DB sessions); id/role/company/sector are added to token in jwt callback
+ * @layer   lib
+ */
 import NextAuth, { type DefaultSession } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@auth/prisma-adapter";

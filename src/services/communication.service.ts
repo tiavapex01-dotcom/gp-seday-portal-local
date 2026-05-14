@@ -1,3 +1,12 @@
+/**
+ * @context communication.service.ts
+ * @what    Business logic for communications — CRUD and listing functions
+ * @purpose Centralise all Communication Prisma queries
+ * @depends prisma, communication.schema
+ * @usedby  api/communications/route.ts, api/communications/[id]/route.ts, dashboard/page.tsx, communications/page.tsx
+ * @rules   getAllCommunications has NO company filter — all users see all published comms
+ * @layer   service
+ */
 import { prisma } from "@/lib/prisma";
 import type {
   CreateCommunicationInput,

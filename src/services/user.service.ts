@@ -1,3 +1,12 @@
+/**
+ * @context user.service.ts
+ * @what    Business logic for user listing and creation
+ * @purpose Centralise all user Prisma calls and uniqueness validation
+ * @depends prisma, bcryptjs, user.schema
+ * @usedby  api/users/route.ts
+ * @rules   Never return password hash; hash cost is 12; email/cpf/phone uniqueness checked together
+ * @layer   service
+ */
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import type { CreateUserInput, ListUsersInput } from "@/schemas/user.schema";

@@ -1,3 +1,12 @@
+/**
+ * @context user.schema.ts
+ * @what    Zod schemas for user creation and listing query params
+ * @purpose Validate and transform API input before it reaches user.service
+ * @depends zod
+ * @usedby  api/users/route.ts
+ * @rules   sanitizeDigits strips non-digit chars from cpf/phone at schema level
+ * @layer   schema
+ */
 import { z } from "zod";
 
 const sanitizeDigits = (val: string | undefined | null) =>

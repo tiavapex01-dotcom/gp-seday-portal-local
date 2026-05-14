@@ -1,13 +1,23 @@
+/**
+ * @context api/files/download/[id]/route.ts
+ * @what    Authenticated file download proxy endpoint
+ * @purpose Stream private Supabase Storage files to the browser with auth check
+ * @depends file.service, api helpers
+ * @usedby  FileCard (download link href)
+ * @rules   NEVER redirect to a signed Supabase URL — always proxy to keep files private
+ * @layer   api-route
+ */
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { downloadFile } from "@/services/file.service";
+import { err, unauthorized, forbidden } from "@/lib/api";
 
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await auth();
-  if (!session?.user) return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+  if (!session?.user) return unauthorized();
 
   try {
     const { id }         = await params;
@@ -18,7 +28,7 @@ export async function GET(
       file.folder.company !== "ALL" &&
       file.folder.company !== session.user.company
     ) {
-      return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
+      return forbidden();
     }
 
     const safeFileName = encodeURIComponent(file.name);
@@ -35,7 +45,6 @@ export async function GET(
       },
     });
   } catch (error: unknown) {
-    const e = error as { message?: string };
-    return NextResponse.json({ error: e.message ?? "Erro interno" }, { status: 500 });
+    return err((error as { message?: string }).message ?? "Erro interno", 500);
   }
 }

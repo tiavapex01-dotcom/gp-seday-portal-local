@@ -1,3 +1,12 @@
+/**
+ * @context file.schema.ts
+ * @what    Zod schemas for file upload (folderId + description) and list params
+ * @purpose Validate file API input; actual file type/size validation is in file.service.validateFile
+ * @depends zod
+ * @usedby  api/files/route.ts
+ * @rules   MIME/extension validation is in file.service — schema only handles text fields
+ * @layer   schema
+ */
 import { z } from "zod";
 
 export const uploadFileSchema = z.object({

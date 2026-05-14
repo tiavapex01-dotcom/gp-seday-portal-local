@@ -1,3 +1,12 @@
+/**
+ * @context file.service.ts
+ * @what    Business logic for file upload, listing, download, and deletion
+ * @purpose Centralise all Supabase Storage and File Prisma calls
+ * @depends prisma, supabase (service-role), file.schema, crypto (for UUID)
+ * @usedby  api/files/route.ts, api/files/[id]/route.ts, api/files/download/[id]/route.ts
+ * @rules   Files stored at {company}/{folderId}/{uuid}{ext}; bucket is PRIVATE — download via proxy only
+ * @layer   service
+ */
 import { prisma } from "@/lib/prisma";
 import { supabaseAdmin, STORAGE_BUCKET } from "@/lib/supabase";
 import crypto from "crypto";

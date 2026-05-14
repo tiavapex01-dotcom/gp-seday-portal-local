@@ -1,3 +1,12 @@
+/**
+ * @context folder.service.ts
+ * @what    Business logic for folder tree — list, create (subfolder + root sector), rename, delete
+ * @purpose Centralise all Folder Prisma queries and duplicate-name checks
+ * @depends prisma, folder.schema
+ * @usedby  api/folders/route.ts, api/folders/[id]/route.ts, files/page.tsx (direct query)
+ * @rules   Duplicate checks are case-insensitive; root folders cannot be renamed or deleted via API
+ * @layer   service
+ */
 import { prisma } from "@/lib/prisma";
 import type { CreateFolderInput, CreateRootFolderInput, RenameFolderInput } from "@/schemas/folder.schema";
 

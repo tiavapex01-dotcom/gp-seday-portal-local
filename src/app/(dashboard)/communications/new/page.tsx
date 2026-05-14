@@ -1,20 +1,23 @@
+/**
+ * @context communications/new/page.tsx
+ * @what    Form page to create a new communication (manager/admin only)
+ * @purpose Allow managers/admins to publish a communication to the board
+ * @depends /api/communications POST, FormError, permissions constants
+ * @usedby  CommunicationsPage ("+ Novo Comunicado" link)
+ * @rules   Manager can only post for their own company; admin can post for any company
+ * @layer   page
+ */
 "use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
+import FormError from "@/components/ui/FormError";
+import { COMPANIES_ALL } from "@/lib/permissions";
 
-const COMPANIES = ["AVAPEX", "SEDAY", "INNOMACH", "ALL"];
 const SECTORS = [
-  "Manutenção",
-  "Administrativo",
-  "RH",
-  "Financeiro",
-  "Diretoria",
-  "Segurança do Trabalho",
-  "Suprimentos/Almoxarifado",
-  "Planejamento",
-  "TI",
+  "Manutenção", "Administrativo", "RH", "Financeiro", "Diretoria",
+  "Segurança do Trabalho", "Suprimentos/Almoxarifado", "Planejamento", "TI",
 ];
 
 export default function NewCommunicationPage() {
@@ -38,9 +41,9 @@ export default function NewCommunicationPage() {
     setError("");
 
     const res = await fetch("/api/communications", {
-      method: "POST",
+      method:  "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
+      body:    JSON.stringify({
         title, content, company, sector, pinned,
         contactPhone: contactPhone || null,
         contactEmail: contactEmail || null,
@@ -63,26 +66,23 @@ export default function NewCommunicationPage() {
       <h1 className="text-2xl font-bold text-gray-800 mb-6">Novo Comunicado</h1>
 
       <form onSubmit={handleSubmit} className="bg-white rounded-xl border border-gray-200 p-6 space-y-4 shadow-sm">
-        {/* Título */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Título *</label>
           <input type="text" required value={title} onChange={(e) => setTitle(e.target.value)}
             className={inputCls} placeholder="Título do comunicado" />
         </div>
 
-        {/* Conteúdo */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Conteúdo *</label>
           <textarea required value={content} onChange={(e) => setContent(e.target.value)}
             rows={6} className={`${inputCls} resize-none`} placeholder="Escreva o comunicado aqui..." />
         </div>
 
-        {/* Empresa + Setor */}
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Empresa *</label>
             <select value={company} onChange={(e) => setCompany(e.target.value)} className={inputCls}>
-              {COMPANIES.map((c) => <option key={c}>{c}</option>)}
+              {COMPANIES_ALL.map((c) => <option key={c}>{c}</option>)}
             </select>
           </div>
           <div>
@@ -94,7 +94,6 @@ export default function NewCommunicationPage() {
           </div>
         </div>
 
-        {/* Contato */}
         <fieldset className="border border-gray-200 rounded-lg p-3 space-y-3">
           <legend className="text-xs font-semibold text-gray-500 uppercase tracking-wider px-1">
             Contato do responsável <span className="font-normal normal-case">(opcional)</span>
@@ -113,16 +112,13 @@ export default function NewCommunicationPage() {
           </div>
         </fieldset>
 
-        {/* Fixar */}
         <label className="flex items-center gap-2 cursor-pointer select-none">
           <input type="checkbox" checked={pinned} onChange={(e) => setPinned(e.target.checked)}
             className="w-4 h-4 accent-[#1a3a6b]" />
           <span className="text-sm text-gray-700">Fixar no topo do mural</span>
         </label>
 
-        {error && (
-          <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded px-3 py-2">{error}</p>
-        )}
+        <FormError message={error} />
 
         <div className="flex gap-3">
           <button type="submit" disabled={loading}

@@ -1,3 +1,12 @@
+/**
+ * @context folder.schema.ts
+ * @what    Zod schemas for subfolder creation, root sector creation, rename, and list params
+ * @purpose Validate folder API input; createFolderSchema requires parentId; createRootFolderSchema requires company
+ * @depends zod
+ * @usedby  api/folders/route.ts, api/folders/[id]/route.ts
+ * @rules   Root and subfolder schemas are intentionally separate — never merge them
+ * @layer   schema
+ */
 import { z } from "zod";
 
 export const createFolderSchema = z.object({

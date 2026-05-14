@@ -1,7 +1,18 @@
+/**
+ * @context CommunicationCard.tsx
+ * @what    Card component for a single communication with pin/unpin and delete actions
+ * @purpose Display communication content with sector badge and manager action buttons
+ * @depends ConfirmDeleteButton, utils (formatDate)
+ * @usedby  CommunicationsPage, DashboardPage
+ * @rules   Pin toggle calls PATCH /api/communications/[id]; delete calls DELETE same route
+ * @layer   component
+ */
 "use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import ConfirmDeleteButton from "./ConfirmDeleteButton";
+import { formatDate } from "@/lib/utils";
 
 interface CommunicationCardProps {
   item: {
@@ -33,31 +44,25 @@ const SECTOR_COLORS: Record<string, string> = {
 
 export default function CommunicationCard({ item, canManage }: CommunicationCardProps) {
   const router = useRouter();
-  const [confirmDelete, setConfirmDelete] = useState(false);
-  const [deleting,      setDeleting]      = useState(false);
-  const [pinning,       setPinning]       = useState(false);
-  const [pinned,        setPinned]        = useState(item.pinned);
+  const [pinning, setPinning] = useState(false);
+  const [pinned,  setPinned]  = useState(item.pinned);
 
   async function handleDelete() {
-    if (!confirmDelete) { setConfirmDelete(true); return; }
-    setDeleting(true);
     const res = await fetch(`/api/communications/${item.id}`, { method: "DELETE" });
     if (res.ok) {
       router.refresh();
     } else {
       const data = await res.json();
       alert(data.error || "Erro ao excluir comunicado.");
-      setDeleting(false);
-      setConfirmDelete(false);
     }
   }
 
   async function handleTogglePin() {
     setPinning(true);
     const res = await fetch(`/api/communications/${item.id}`, {
-      method: "PATCH",
+      method:  "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ pinned: !pinned }),
+      body:    JSON.stringify({ pinned: !pinned }),
     });
     if (res.ok) { setPinned((p) => !p); router.refresh(); }
     setPinning(false);
@@ -70,9 +75,7 @@ export default function CommunicationCard({ item, canManage }: CommunicationCard
       pinned ? "border-yellow-300 bg-yellow-50" : "border-gray-200"
     }`}>
       <div className="flex items-start justify-between gap-3">
-        {/* Corpo */}
         <div className="flex-1 min-w-0">
-          {/* Badges */}
           <div className="flex items-center gap-2 flex-wrap mb-2">
             {pinned && (
               <span className="text-xs bg-yellow-100 text-yellow-700 font-semibold px-2 py-0.5 rounded-full">
@@ -89,13 +92,9 @@ export default function CommunicationCard({ item, canManage }: CommunicationCard
             )}
           </div>
 
-          {/* Título */}
           <h2 className="font-semibold text-gray-800 text-base mb-1">{item.title}</h2>
-
-          {/* Conteúdo */}
           <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{item.content}</p>
 
-          {/* Contato */}
           {(item.contactPhone || item.contactEmail) && (
             <div className="mt-3 flex flex-wrap gap-3 text-xs text-gray-500 border-t border-gray-100 pt-3">
               <span className="font-medium text-gray-600">Contato:</span>
@@ -114,16 +113,11 @@ export default function CommunicationCard({ item, canManage }: CommunicationCard
             </div>
           )}
 
-          {/* Rodapé */}
           <p className="text-xs text-gray-400 mt-3">
-            {item.createdBy.name} ·{" "}
-            {new Date(item.createdAt).toLocaleDateString("pt-BR", {
-              day: "2-digit", month: "long", year: "numeric",
-            })}
+            {item.createdBy.name} · {formatDate(item.createdAt)}
           </p>
         </div>
 
-        {/* Ações */}
         {canManage && (
           <div className="flex flex-col items-end gap-1.5 shrink-0">
             <button onClick={handleTogglePin} disabled={pinning}
@@ -135,24 +129,7 @@ export default function CommunicationCard({ item, canManage }: CommunicationCard
               }`}>
               {pinning ? "..." : pinned ? "📌 Desafixar" : "📌 Fixar"}
             </button>
-
-            {confirmDelete ? (
-              <div className="flex gap-1.5">
-                <button onClick={handleDelete} disabled={deleting}
-                  className="text-xs bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded-lg font-medium disabled:opacity-60">
-                  {deleting ? "..." : "Confirmar"}
-                </button>
-                <button onClick={() => setConfirmDelete(false)}
-                  className="text-xs bg-gray-200 hover:bg-gray-300 text-gray-700 px-2 py-1 rounded-lg">
-                  Cancelar
-                </button>
-              </div>
-            ) : (
-              <button onClick={handleDelete}
-                className="text-xs text-red-400 hover:text-red-600 hover:bg-red-50 px-2 py-1 rounded-lg border border-transparent hover:border-red-200 transition-colors">
-                🗑️ Excluir
-              </button>
-            )}
+            <ConfirmDeleteButton onDelete={handleDelete} />
           </div>
         )}
       </div>

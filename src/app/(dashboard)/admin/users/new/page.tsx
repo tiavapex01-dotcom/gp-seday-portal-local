@@ -1,23 +1,30 @@
+/**
+ * @context admin/users/new/page.tsx
+ * @what    Form page to create a new user (admin-only)
+ * @purpose Allow admin to add employees, managers, or other admins to any company
+ * @depends /api/users POST, FormError component, permissions constants
+ * @usedby  AdminPage ("+ Novo Usuário" link)
+ * @rules   Only admin can reach this page (enforced by middleware + API)
+ * @layer   page
+ */
 "use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import FormError from "@/components/ui/FormError";
+import { ROLES, COMPANIES } from "@/lib/permissions";
 
-const ROLES = ["employee", "manager", "admin"];
-const COMPANIES = ["AVAPEX", "SEDAY", "INNOMACH"];
+const ROLE_OPTIONS  = Object.values(ROLES);
+const COMPANY_OPTIONS = [...COMPANIES];
 
 export default function NewUserPage() {
   const router = useRouter();
   const [form, setForm] = useState({
-    name: "",
-    email: "",
-    password: "",
-    role: "employee",
-    company: "SEDAY",
-    sector: "",
+    name: "", email: "", password: "",
+    role: ROLES.EMPLOYEE, company: "SEDAY", sector: "",
   });
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [error,   setError]   = useState("");
 
   function onChange(field: string, value: string) {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -29,9 +36,9 @@ export default function NewUserPage() {
     setError("");
 
     const res = await fetch("/api/users", {
-      method: "POST",
+      method:  "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...form, sector: form.sector || null }),
+      body:    JSON.stringify({ ...form, sector: form.sector || null }),
     });
 
     setLoading(false);
@@ -63,12 +70,12 @@ export default function NewUserPage() {
         <div className="grid grid-cols-2 gap-3">
           <FormField label="Papel *">
             <select className={field} value={form.role} onChange={(e) => onChange("role", e.target.value)}>
-              {ROLES.map((r) => <option key={r}>{r}</option>)}
+              {ROLE_OPTIONS.map((r) => <option key={r}>{r}</option>)}
             </select>
           </FormField>
           <FormField label="Empresa *">
             <select className={field} value={form.company} onChange={(e) => onChange("company", e.target.value)}>
-              {COMPANIES.map((c) => <option key={c}>{c}</option>)}
+              {COMPANY_OPTIONS.map((c) => <option key={c}>{c}</option>)}
             </select>
           </FormField>
         </div>
@@ -77,13 +84,10 @@ export default function NewUserPage() {
           <input type="text" className={field} value={form.sector} onChange={(e) => onChange("sector", e.target.value)} placeholder="ex: Comercial" />
         </FormField>
 
-        {error && <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded px-3 py-2">{error}</p>}
+        <FormError message={error} />
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full bg-[#1a3a6b] hover:bg-[#2554a0] text-white font-semibold py-2.5 rounded-lg transition-colors disabled:opacity-60"
-        >
+        <button type="submit" disabled={loading}
+          className="w-full bg-[#1a3a6b] hover:bg-[#2554a0] text-white font-semibold py-2.5 rounded-lg transition-colors disabled:opacity-60">
           {loading ? "Criando..." : "Criar Usuário"}
         </button>
       </form>

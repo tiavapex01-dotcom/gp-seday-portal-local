@@ -1,3 +1,12 @@
+/**
+ * @context communication.schema.ts
+ * @what    Zod schemas for communication create, update, and list query params
+ * @purpose Validate API input for the communications feature
+ * @depends zod
+ * @usedby  api/communications/route.ts, api/communications/[id]/route.ts
+ * @rules   updateCommunicationSchema only allows pinned/published — no content edits via PATCH
+ * @layer   schema
+ */
 import { z } from "zod";
 
 export const createCommunicationSchema = z.object({

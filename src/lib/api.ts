@@ -1,3 +1,12 @@
+/**
+ * @context api.ts
+ * @what    HTTP response helpers and error-handling wrapper for API routes
+ * @purpose Avoid repeating NextResponse.json(...) patterns in every route handler
+ * @depends errors.ts (AppError hierarchy), ZodError from zod
+ * @usedby  All API route handlers under src/app/api/
+ * @rules   Every API route MUST use these helpers instead of raw NextResponse.json
+ * @layer   lib
+ */
 import { NextResponse } from 'next/server';
 import { ZodError } from 'zod/v4';
 import { AppError } from './errors';

@@ -1,3 +1,12 @@
+/**
+ * @context pagination.ts
+ * @what    Helpers for parsing and building pagination parameters
+ * @purpose Standardise page/limit/skip across all paginated service calls
+ * @depends Nothing
+ * @usedby  user.service.ts, file.service.ts, communication.service.ts (via Zod schemas)
+ * @rules   Max limit is capped at 100 to prevent runaway queries
+ * @layer   lib
+ */
 export interface PaginationParams {
   page: number;
   limit: number;

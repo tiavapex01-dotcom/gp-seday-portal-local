@@ -1,11 +1,22 @@
-import { NextRequest, NextResponse } from "next/server";
+/**
+ * @context api/files/route.ts
+ * @what    REST endpoints for files (list + upload)
+ * @purpose List files in a folder and handle multipart upload to Supabase Storage
+ * @depends file.service, file.schema, api helpers
+ * @usedby  FilesPage, UploadPage
+ * @rules   Upload goes to Supabase private bucket — never expose storagePath to the client
+ * @layer   api-route
+ */
+import { NextRequest } from "next/server";
+import { ZodError } from "zod";
 import { auth } from "@/auth";
 import { listFiles, uploadFile, validateFile } from "@/services/file.service";
 import { uploadFileSchema, listFilesSchema } from "@/schemas/file.schema";
+import { ok, created, err, unauthorized, forbidden, fromZodError } from "@/lib/api";
 
 export async function GET(req: NextRequest) {
   const session = await auth();
-  if (!session?.user) return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+  if (!session?.user) return unauthorized();
 
   try {
     const params  = Object.fromEntries(new URL(req.url).searchParams);
@@ -17,21 +28,20 @@ export async function GET(req: NextRequest) {
       result.folder.company !== "ALL" &&
       result.folder.company !== session.user.company
     ) {
-      return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
+      return forbidden();
     }
 
-    return NextResponse.json({ data: result.data, meta: result.meta });
+    return ok({ data: result.data, meta: result.meta });
   } catch (error: unknown) {
-    const e = error as { name?: string; errors?: { message: string }[]; message?: string };
-    if (e.name === "ZodError") return NextResponse.json({ error: e.errors?.[0]?.message }, { status: 400 });
-    return NextResponse.json({ error: e.message ?? "Erro interno" }, { status: 500 });
+    if (error instanceof ZodError) return fromZodError(error);
+    return err((error as { message?: string }).message ?? "Erro interno", 500);
   }
 }
 
 export async function POST(req: NextRequest) {
   const session = await auth();
-  if (!session?.user) return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
-  if (session.user.role === "employee") return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
+  if (!session?.user)               return unauthorized();
+  if (session.user.role === "employee") return forbidden();
 
   try {
     const formData    = await req.formData();
@@ -39,18 +49,17 @@ export async function POST(req: NextRequest) {
     const folderId    = formData.get("folderId") as string | null;
     const description = formData.get("description") as string | null;
 
-    if (!file) return NextResponse.json({ error: "Arquivo é obrigatório" }, { status: 400 });
+    if (!file) return err("Arquivo é obrigatório", 400);
 
     const validationError = validateFile(file);
-    if (validationError) return NextResponse.json({ error: validationError }, { status: 400 });
+    if (validationError) return err(validationError, 400);
 
-    const input   = uploadFileSchema.parse({ folderId, description });
-    const record  = await uploadFile(file, input, session.user.id);
+    const input  = uploadFileSchema.parse({ folderId, description });
+    const record = await uploadFile(file, input, session.user.id);
 
-    return NextResponse.json(record, { status: 201 });
+    return created(record);
   } catch (error: unknown) {
-    const e = error as { name?: string; errors?: { message: string }[]; message?: string };
-    if (e.name === "ZodError") return NextResponse.json({ error: e.errors?.[0]?.message }, { status: 400 });
-    return NextResponse.json({ error: e.message ?? "Erro interno" }, { status: 400 });
+    if (error instanceof ZodError) return fromZodError(error);
+    return err((error as { message?: string }).message ?? "Erro interno", 400);
   }
 }
