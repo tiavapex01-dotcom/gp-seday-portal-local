@@ -48,13 +48,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       async authorize(credentials) {
         if (!credentials?.identifier || !credentials?.password) return null;
 
-        const rawIdentifier = credentials.identifier as string;
+        const rawIdentifier = (credentials.identifier as string).trim();
         const isEmail = rawIdentifier.includes("@");
         const digitsOnly = rawIdentifier.replace(/\D/g, "");
 
         const user = await prisma.user.findFirst({
           where: isEmail
-            ? { email: rawIdentifier.toLowerCase() }
+            ? { email: { equals: rawIdentifier.toLowerCase(), mode: "insensitive" } }
             : { OR: [{ cpf: digitsOnly }, { phone: digitsOnly }] },
         });
 

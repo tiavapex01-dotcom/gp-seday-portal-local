@@ -57,6 +57,7 @@ export default async function AdminPage() {
               <th className="text-left px-4 py-3 font-semibold text-gray-600">Empresa</th>
               <th className="text-left px-4 py-3 font-semibold text-gray-600">Papel</th>
               <th className="text-left px-4 py-3 font-semibold text-gray-600">Status</th>
+              <th className="text-left px-4 py-3 font-semibold text-gray-600">Ações</th>
             </tr>
           </thead>
           <tbody>
@@ -74,6 +75,11 @@ export default async function AdminPage() {
                   <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${u.active ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
                     {u.active ? "Ativo" : "Inativo"}
                   </span>
+                </td>
+                <td className="px-4 py-3">
+                  <Link href={`/admin/users/${u.id}/edit`} className="text-xs text-[#2554a0] hover:underline font-medium">
+                    Editar
+                  </Link>
                 </td>
               </tr>
             ))}

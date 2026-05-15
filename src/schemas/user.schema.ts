@@ -29,5 +29,18 @@ export const listUsersSchema = z.object({
   search: z.string().optional(),
 });
 
+export const updateUserSchema = z.object({
+  name:     z.string().min(1, "Nome é obrigatório").optional(),
+  email:    z.string().email("E-mail inválido").transform((s) => s.toLowerCase()).optional(),
+  cpf:      z.string().optional().nullable().transform(sanitizeDigits),
+  phone:    z.string().optional().nullable().transform(sanitizeDigits),
+  password: z.string().optional(),
+  role:     z.enum(["admin", "manager", "employee"]).optional(),
+  company:  z.enum(["AVAPEX", "SEDAY", "INNOMACH"]).optional(),
+  sector:   z.string().optional().nullable(),
+  active:   z.boolean().optional(),
+});
+
 export type CreateUserInput = z.infer<typeof createUserSchema>;
 export type ListUsersInput  = z.infer<typeof listUsersSchema>;
+export type UpdateUserInput = z.infer<typeof updateUserSchema>;

@@ -35,11 +35,11 @@ async function main() {
 
   // Usuários de teste
   await prisma.user.upsert({
-    where: { email: "admin@gruposedaY.com.br" },
+    where: { email: "admin@gruposeday.com.br" },
     update: {},
     create: {
       name: "Administrador",
-      email: "admin@gruposedaY.com.br",
+      email: "admin@gruposeday.com.br",
       password: await bcrypt.hash("Admin@123", 12),
       role: "admin",
       company: "SEDAY",
@@ -48,11 +48,11 @@ async function main() {
   });
 
   await prisma.user.upsert({
-    where: { email: "manager.avapex@gruposedaY.com.br" },
+    where: { email: "manager.avapex@gruposeday.com.br" },
     update: {},
     create: {
       name: "Gerente Avapex",
-      email: "manager.avapex@gruposedaY.com.br",
+      email: "manager.avapex@gruposeday.com.br",
       password: await bcrypt.hash("Manager@123", 12),
       role: "manager",
       company: "AVAPEX",
@@ -61,11 +61,11 @@ async function main() {
   });
 
   await prisma.user.upsert({
-    where: { email: "colaborador@gruposedaY.com.br" },
+    where: { email: "colaborador@gruposeday.com.br" },
     update: {},
     create: {
       name: "Colaborador Teste",
-      email: "colaborador@gruposedaY.com.br",
+      email: "colaborador@gruposeday.com.br",
       password: await bcrypt.hash("Employee@123", 12),
       role: "employee",
       company: "INNOMACH",
@@ -74,9 +74,9 @@ async function main() {
   });
 
   console.log("✅ Usuários criados:");
-  console.log("   admin@gruposedaY.com.br            → Admin@123    (admin)");
-  console.log("   manager.avapex@gruposedaY.com.br   → Manager@123  (manager)");
-  console.log("   colaborador@gruposedaY.com.br      → Employee@123 (employee)");
+  console.log("   admin@gruposeday.com.br            → Admin@123    (admin)");
+  console.log("   manager.avapex@gruposeday.com.br   → Manager@123  (manager)");
+  console.log("   colaborador@gruposeday.com.br      → Employee@123 (employee)");
 }
 
 main()

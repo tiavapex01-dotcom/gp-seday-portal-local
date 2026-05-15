@@ -9,7 +9,7 @@
  */
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
-import type { CreateUserInput, ListUsersInput } from "@/schemas/user.schema";
+import type { CreateUserInput, ListUsersInput, UpdateUserInput } from "@/schemas/user.schema";
 
 export async function listUsers({ page, limit, search }: ListUsersInput) {
   const skip = (page - 1) * limit;
@@ -68,6 +68,52 @@ export async function createUser(data: CreateUserInput) {
     select: {
       id: true, name: true, email: true,
       role: true, company: true, sector: true,
+    },
+  });
+}
+
+export async function updateUser(id: string, data: UpdateUserInput) {
+  const checks: object[] = [];
+  if (data.email) checks.push({ email: data.email });
+  if (data.cpf)   checks.push({ cpf: data.cpf });
+  if (data.phone) checks.push({ phone: data.phone });
+
+  if (checks.length > 0) {
+    const conflict = await prisma.user.findFirst({
+      where: { id: { not: id }, OR: checks },
+    });
+    if (conflict) {
+      if (data.email && conflict.email === data.email) throw new Error("E-mail já cadastrado para outro usuário");
+      if (data.cpf   && conflict.cpf   === data.cpf)   throw new Error("CPF já cadastrado para outro usuário");
+      if (data.phone && conflict.phone === data.phone) throw new Error("Telefone já cadastrado para outro usuário");
+    }
+  }
+
+  if (data.password && data.password.trim().length > 0 && data.password.trim().length < 6) {
+    throw new Error("Senha deve ter no mínimo 6 caracteres");
+  }
+
+  const passwordHash =
+    data.password && data.password.trim().length >= 6
+      ? await bcrypt.hash(data.password, 12)
+      : undefined;
+
+  return prisma.user.update({
+    where: { id },
+    data: {
+      ...(data.name    !== undefined && { name: data.name }),
+      ...(data.email   !== undefined && { email: data.email }),
+      ...(data.cpf     !== undefined && { cpf: data.cpf }),
+      ...(data.phone   !== undefined && { phone: data.phone }),
+      ...(data.role    !== undefined && { role: data.role }),
+      ...(data.company !== undefined && { company: data.company }),
+      ...(data.sector  !== undefined && { sector: data.sector }),
+      ...(data.active  !== undefined && { active: data.active }),
+      ...(passwordHash !== undefined && { password: passwordHash }),
+    },
+    select: {
+      id: true, name: true, email: true, cpf: true,
+      phone: true, role: true, company: true, sector: true, active: true,
     },
   });
 }
