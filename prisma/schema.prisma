@@ -28,6 +28,7 @@ model User {
 
   @@index([company])
   @@index([role])
+  @@index([active])
 }
 
 model Folder {
@@ -50,6 +51,7 @@ model Folder {
 
   @@index([parentId])
   @@index([company])
+  @@index([isRoot])
 }
 
 model File {
@@ -91,7 +93,9 @@ model Communication {
   createdBy   User   @relation("CreatedBy", fields: [createdById], references: [id])
   createdById String
 
+  @@index([published])
   @@index([company])
   @@index([pinned])
   @@index([sector])
+  @@index([published, createdAt])
 }

@@ -8,6 +8,7 @@
  * @layer   service
  */
 import { prisma } from "@/lib/prisma";
+import { handlePrismaError } from "@/lib/prisma-errors";
 import type { CreateFolderInput, CreateRootFolderInput, RenameFolderInput } from "@/schemas/folder.schema";
 
 export async function listFolders(company: string) {
@@ -38,7 +39,7 @@ export async function createFolder(input: CreateFolderInput, createdById: string
       parentId:    input.parentId,
       createdById,
     },
-  });
+  }).catch(handlePrismaError);
 }
 
 export async function createRootFolder(input: CreateRootFolderInput, createdById: string) {
@@ -59,7 +60,7 @@ export async function createRootFolder(input: CreateRootFolderInput, createdById
       parentId:   null,
       createdById,
     },
-  });
+  }).catch(handlePrismaError);
 }
 
 export async function getFolderById(id: string) {

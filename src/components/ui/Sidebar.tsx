@@ -2,7 +2,7 @@
  * @context Sidebar.tsx
  * @what    App shell sidebar with company badge, nav links, and logout button
  * @purpose Primary navigation visible on all dashboard pages
- * @depends next-auth/react (signOut), usePathname, permissions (COMPANY_COLORS inline)
+ * @depends next-auth/react (signOut), usePathname, CompanyBadge
  * @usedby  src/app/(dashboard)/layout.tsx
  * @rules   Upload and Admin links are conditionally shown based on role; active link uses bg-white/20
  * @layer   component
@@ -12,6 +12,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
+import CompanyBadge from "./CompanyBadge";
 
 interface SidebarProps {
   user: {
@@ -21,12 +22,6 @@ interface SidebarProps {
     company: string;
   };
 }
-
-const COMPANY_COLORS: Record<string, string> = {
-  AVAPEX: "bg-orange-500",
-  SEDAY: "bg-blue-700",
-  INNOMACH: "bg-emerald-600",
-};
 
 export default function Sidebar({ user }: SidebarProps) {
   const pathname = usePathname();
@@ -43,18 +38,14 @@ export default function Sidebar({ user }: SidebarProps) {
       : []),
   ];
 
-  const companyColor = COMPANY_COLORS[user.company] || "bg-gray-600";
-
   return (
     <aside className="w-60 bg-[#1a3a6b] text-white flex flex-col h-full">
       {/* Logo */}
       <div className="px-5 py-5 border-b border-white/10">
         <h1 className="text-xl font-bold">Grupo Seday</h1>
-        <span
-          className={`text-xs font-semibold mt-1 inline-block px-2 py-0.5 rounded-full ${companyColor}`}
-        >
-          {user.company}
-        </span>
+        <div className="mt-1">
+          <CompanyBadge company={user.company} />
+        </div>
       </div>
 
       {/* Nav */}

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useFormSubmit } from "@/hooks/useFormSubmit";
 
 interface CreateFolderFormProps {
   parentId: string;
@@ -12,32 +13,30 @@ export default function CreateFolderForm({ parentId, parentName }: CreateFolderF
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+
+  const { submit, loading, error, setError } = useFormSubmit(
+    async () => {
+      const res = await fetch("/api/folders", {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify({ name: name.trim(), parentId }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Erro ao criar pasta.");
+      }
+    },
+    () => {
+      setName("");
+      setOpen(false);
+      router.refresh();
+    }
+  );
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!name.trim()) return;
-    setLoading(true);
-    setError("");
-
-    const res = await fetch("/api/folders", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: name.trim(), parentId }),
-    });
-
-    setLoading(false);
-
-    if (!res.ok) {
-      const data = await res.json();
-      setError(data.error || "Erro ao criar pasta.");
-      return;
-    }
-
-    setName("");
-    setOpen(false);
-    router.refresh();
+    await submit();
   }
 
   if (!open) {

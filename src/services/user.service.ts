@@ -9,6 +9,7 @@
  */
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
+import { handlePrismaError } from "@/lib/prisma-errors";
 import type { CreateUserInput, ListUsersInput, UpdateUserInput } from "@/schemas/user.schema";
 
 export async function listUsers({ page, limit, search }: ListUsersInput) {
@@ -69,7 +70,7 @@ export async function createUser(data: CreateUserInput) {
       id: true, name: true, email: true,
       role: true, company: true, sector: true,
     },
-  });
+  }).catch(handlePrismaError);
 }
 
 export async function updateUser(id: string, data: UpdateUserInput) {
@@ -115,5 +116,5 @@ export async function updateUser(id: string, data: UpdateUserInput) {
       id: true, name: true, email: true, cpf: true,
       phone: true, role: true, company: true, sector: true, active: true,
     },
-  });
+  }).catch(handlePrismaError);
 }

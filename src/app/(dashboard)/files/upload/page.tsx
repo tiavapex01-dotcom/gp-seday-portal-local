@@ -46,10 +46,17 @@ function UploadContent() {
 
   useEffect(() => {
     fetch("/api/folders")
-      .then((r) => r.json())
+      .then((r) => {
+        if (!r.ok) throw new Error(`Erro ao carregar pastas: ${r.status}`);
+        return r.json();
+      })
       .then((data: FolderOption[]) => {
         setFolders(data);
         if (!preSelectedId && data.length > 0) setFolderId(data[0].id);
+      })
+      .catch((e: unknown) => {
+        console.error("[UploadPage] Falha ao carregar pastas:", e);
+        setError("Não foi possível carregar as pastas. Recarregue a página.");
       });
   }, [preSelectedId]);
 

@@ -9,6 +9,7 @@
  */
 import { prisma } from "@/lib/prisma";
 import { supabaseAdmin, STORAGE_BUCKET } from "@/lib/supabase";
+import { handlePrismaError } from "@/lib/prisma-errors";
 import crypto from "crypto";
 import type { UploadFileInput, ListFilesInput } from "@/schemas/file.schema";
 

@@ -2,47 +2,39 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useFormSubmit } from "@/hooks/useFormSubmit";
 
-export default function CreateSectorButton({
-  company,
-}: {
-  company: string;
-}) {
-  const [open, setOpen]       = useState(false);
-  const [name, setName]       = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError]     = useState<string | null>(null);
-  const router                = useRouter();
+export default function CreateSectorButton({ company }: { company: string }) {
+  const [open, setOpen] = useState(false);
+  const [name, setName] = useState("");
+  const router          = useRouter();
 
-  function handleClose() {
-    setOpen(false);
-    setName("");
-    setError(null);
-  }
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!name.trim()) return;
-    setLoading(true);
-    setError(null);
-    try {
+  const { submit, loading, error, setError } = useFormSubmit(
+    async () => {
       const res  = await fetch("/api/folders", {
         method:  "POST",
         headers: { "Content-Type": "application/json" },
         body:    JSON.stringify({ name: name.trim(), company, isRoot: true }),
       });
       const data = await res.json();
-      if (!res.ok) {
-        setError(data.error ?? "Erro ao criar setor");
-        return;
-      }
+      if (!res.ok) throw new Error(data.error ?? "Erro ao criar setor");
+    },
+    () => {
       handleClose();
       router.refresh();
-    } catch {
-      setError("Erro ao criar setor");
-    } finally {
-      setLoading(false);
     }
+  );
+
+  function handleClose() {
+    setOpen(false);
+    setName("");
+    setError("");
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!name.trim()) return;
+    await submit();
   }
 
   return (
