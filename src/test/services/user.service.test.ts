@@ -167,6 +167,46 @@ describe('updateUser', () => {
     const updateCall = vi.mocked(prisma.user.update).mock.calls[0][0];
     expect(updateCall.data.active).toBe(false);
   });
+
+  it('deve lançar "E-mail já cadastrado para outro usuário" ao atualizar email duplicado', async () => {
+    // findFirst returns a DIFFERENT user that already owns this email
+    vi.mocked(prisma.user.findFirst).mockResolvedValue({
+      id: 'outro-id',
+      email: 'duplicado@gruposeday.com.br',
+      cpf: null,
+      phone: null,
+    } as any);
+
+    await expect(
+      updateUser('1', { email: 'duplicado@gruposeday.com.br' })
+    ).rejects.toThrow('E-mail já cadastrado para outro usuário');
+  });
+
+  it('deve lançar "CPF já cadastrado para outro usuário" ao atualizar CPF duplicado', async () => {
+    vi.mocked(prisma.user.findFirst).mockResolvedValue({
+      id: 'outro-id',
+      email: 'outro@gruposeday.com.br',
+      cpf: '12345678901',
+      phone: null,
+    } as any);
+
+    await expect(
+      updateUser('1', { cpf: '12345678901' })
+    ).rejects.toThrow('CPF já cadastrado para outro usuário');
+  });
+
+  it('deve lançar "Telefone já cadastrado para outro usuário" ao atualizar telefone duplicado', async () => {
+    vi.mocked(prisma.user.findFirst).mockResolvedValue({
+      id: 'outro-id',
+      email: 'outro@gruposeday.com.br',
+      cpf: null,
+      phone: '31999999999',
+    } as any);
+
+    await expect(
+      updateUser('1', { phone: '31999999999' })
+    ).rejects.toThrow('Telefone já cadastrado para outro usuário');
+  });
 });
 
 import { listUsers } from '@/services/user.service';

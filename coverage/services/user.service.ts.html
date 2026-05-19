@@ -23,16 +23,16 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">66.66% </span>
+                <span class="strong">94.87% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>26/39</span>
+                <span class='fraction'>37/39</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">57.97% </span>
+                <span class="strong">81.15% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>40/69</span>
+                <span class='fraction'>56/69</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">78.57% </span>
+                <span class="strong">96.42% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>22/28</span>
+                <span class='fraction'>27/28</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line medium'></div>
+    <div class='status-line high'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -259,19 +259,19 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">5x</span>
-<span class="cline-any cline-yes">5x</span>
-<span class="cline-any cline-yes">5x</span>
-<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">5x</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -284,7 +284,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-yes">8x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -380,18 +380,18 @@ export async function createUser(data: CreateUserInput) {
 &nbsp;
 export async function updateUser(id: string, data: UpdateUserInput) {
   const checks: object[] = [];
-  <span class="missing-if-branch" title="if path not taken" >I</span>if (data.email) <span class="cstat-no" title="statement not covered" >checks.push({ email: data.email });</span>
-  <span class="missing-if-branch" title="if path not taken" >I</span>if (data.cpf)   <span class="cstat-no" title="statement not covered" >checks.push({ cpf: data.cpf });</span>
-  <span class="missing-if-branch" title="if path not taken" >I</span>if (data.phone) <span class="cstat-no" title="statement not covered" >checks.push({ phone: data.phone });</span>
+  if (data.email) checks.push({ email: data.email });
+  if (data.cpf)   checks.push({ cpf: data.cpf });
+  if (data.phone) checks.push({ phone: data.phone });
 &nbsp;
-  <span class="missing-if-branch" title="if path not taken" >I</span>if (checks.length &gt; 0) {
-    const conflict = <span class="cstat-no" title="statement not covered" >await prisma.user.findFirst({</span>
+  if (checks.length &gt; 0) {
+    const conflict = await prisma.user.findFirst({
       where: { id: { not: id }, OR: checks },
     });
-<span class="cstat-no" title="statement not covered" >    if (conflict) {</span>
-<span class="cstat-no" title="statement not covered" >      if (data.email &amp;&amp; conflict.email === data.email) <span class="cstat-no" title="statement not covered" >throw new Error("E-mail já cadastrado para outro usuário");</span></span>
-<span class="cstat-no" title="statement not covered" >      if (data.cpf   &amp;&amp; conflict.cpf   === data.cpf)   <span class="cstat-no" title="statement not covered" >throw new Error("CPF já cadastrado para outro usuário");</span></span>
-<span class="cstat-no" title="statement not covered" >      if (data.phone &amp;&amp; conflict.phone === data.phone) <span class="cstat-no" title="statement not covered" >throw new Error("Telefone já cadastrado para outro usuário");</span></span>
+    <span class="missing-if-branch" title="else path not taken" >E</span>if (conflict) {
+      if (data.email &amp;&amp; conflict.email === data.email) throw new Error("E-mail já cadastrado para outro usuário");
+      if (data.cpf   &amp;&amp; conflict.cpf   === data.cpf)   throw new Error("CPF já cadastrado para outro usuário");
+      <span class="missing-if-branch" title="else path not taken" >E</span>if (data.phone &amp;&amp; conflict.phone === data.phone) throw new Error("Telefone já cadastrado para outro usuário");
     }
   }
 &nbsp;
@@ -430,7 +430,7 @@ export async function updateUser(id: string, data: UpdateUserInput) {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-05-19T17:22:31.082Z
+                at 2026-05-19T17:25:24.220Z
             </div>
         <script src="../prettify.js"></script>
         <script>
