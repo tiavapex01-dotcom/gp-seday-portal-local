@@ -146,4 +146,101 @@ describe('updateUser', () => {
       updateUser('1', { password: '123' })
     ).rejects.toThrow('Senha deve ter no mínimo 6 caracteres');
   });
+
+  it('deve atualizar nome sem afetar senha', async () => {
+    vi.mocked(prisma.user.findFirst).mockResolvedValue(null);
+    vi.mocked(prisma.user.update).mockResolvedValue({ id: '1', name: 'Novo Nome' } as any);
+
+    await updateUser('1', { name: 'Novo Nome' });
+
+    const updateCall = vi.mocked(prisma.user.update).mock.calls[0][0];
+    expect(updateCall.data.name).toBe('Novo Nome');
+    expect(updateCall.data.password).toBeUndefined();
+  });
+
+  it('deve atualizar active: false (desativar usuário)', async () => {
+    vi.mocked(prisma.user.findFirst).mockResolvedValue(null);
+    vi.mocked(prisma.user.update).mockResolvedValue({ id: '1', active: false } as any);
+
+    await updateUser('1', { active: false });
+
+    const updateCall = vi.mocked(prisma.user.update).mock.calls[0][0];
+    expect(updateCall.data.active).toBe(false);
+  });
+});
+
+import { listUsers } from '@/services/user.service';
+
+describe('listUsers', () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it('deve chamar findMany e count', async () => {
+    vi.mocked(prisma.user.findMany).mockResolvedValue([]);
+    vi.mocked(prisma.user.count).mockResolvedValue(0);
+
+    await listUsers({ page: 1, limit: 20 });
+
+    expect(prisma.user.findMany).toHaveBeenCalledTimes(1);
+    expect(prisma.user.count).toHaveBeenCalledTimes(1);
+  });
+
+  it('deve retornar objeto com data e meta', async () => {
+    const mockUsers = [{
+      id: 'u1', name: 'Usuário', email: 'u@test.com',
+      role: 'employee', company: 'SEDAY', sector: null,
+      active: true, createdAt: new Date(),
+    }];
+    vi.mocked(prisma.user.findMany).mockResolvedValue(mockUsers as any);
+    vi.mocked(prisma.user.count).mockResolvedValue(1);
+
+    const result = await listUsers({ page: 1, limit: 20 });
+
+    expect(result.data).toHaveLength(1);
+    expect(result.meta.total).toBe(1);
+    expect(result.meta.page).toBe(1);
+    expect(result.meta.pages).toBe(1);
+  });
+
+  it('deve calcular skip correto para página 2', async () => {
+    vi.mocked(prisma.user.findMany).mockResolvedValue([]);
+    vi.mocked(prisma.user.count).mockResolvedValue(25);
+
+    await listUsers({ page: 2, limit: 10 });
+
+    expect(prisma.user.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ skip: 10, take: 10 })
+    );
+  });
+
+  it('deve filtrar por search quando fornecido', async () => {
+    vi.mocked(prisma.user.findMany).mockResolvedValue([]);
+    vi.mocked(prisma.user.count).mockResolvedValue(0);
+
+    await listUsers({ page: 1, limit: 20, search: 'Samuel' });
+
+    expect(prisma.user.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ OR: expect.any(Array) }),
+      })
+    );
+  });
+
+  it('deve usar where vazio sem filtro de search', async () => {
+    vi.mocked(prisma.user.findMany).mockResolvedValue([]);
+    vi.mocked(prisma.user.count).mockResolvedValue(0);
+
+    await listUsers({ page: 1, limit: 20 });
+
+    expect(prisma.user.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: {} })
+    );
+  });
+
+  it('deve calcular pages correto com múltiplas páginas', async () => {
+    vi.mocked(prisma.user.findMany).mockResolvedValue([]);
+    vi.mocked(prisma.user.count).mockResolvedValue(45);
+
+    const result = await listUsers({ page: 1, limit: 10 });
+    expect(result.meta.pages).toBe(5);
+  });
 });

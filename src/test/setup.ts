@@ -7,6 +7,15 @@
 import '@testing-library/jest-dom';
 import { vi } from 'vitest';
 
+// ── Supabase Storage mock — supports .from().upload() / .download() / .remove() ──
+export const mockStorageClient = {
+  upload:         vi.fn().mockResolvedValue({ data: { path: 'uploads/test/file.pdf' }, error: null }),
+  download:       vi.fn().mockResolvedValue({ data: new Blob(['content']), error: null }),
+  remove:         vi.fn().mockResolvedValue({ data: {}, error: null }),
+  getPublicUrl:   vi.fn().mockReturnValue({ data: { publicUrl: 'https://supabase.co/file.pdf' } }),
+  createSignedUrl: vi.fn().mockResolvedValue({ data: { signedUrl: 'https://signed.url' }, error: null }),
+};
+
 // ── Prisma mock ──────────────────────────────────────────────────────────────
 vi.mock('@/lib/prisma', () => ({
   prisma: {
@@ -47,19 +56,24 @@ vi.mock('@/lib/prisma', () => ({
   },
 }));
 
-// ── Supabase mock ────────────────────────────────────────────────────────────
-vi.mock('@/lib/supabase', () => ({
-  supabaseAdmin: {
-    storage: {
-      from: vi.fn(() => ({
-        upload:   vi.fn(),
-        download: vi.fn(),
-        remove:   vi.fn(),
-      })),
+// ── Supabase mock ─────────────────────────────────────────────────────────────
+vi.mock('@/lib/supabase', () => {
+  const client = {
+    upload:         vi.fn().mockResolvedValue({ data: { path: 'uploads/test/file.pdf' }, error: null }),
+    download:       vi.fn().mockResolvedValue({ data: new Blob(['content']), error: null }),
+    remove:         vi.fn().mockResolvedValue({ data: {}, error: null }),
+    getPublicUrl:   vi.fn().mockReturnValue({ data: { publicUrl: 'https://supabase.co/file.pdf' } }),
+    createSignedUrl: vi.fn().mockResolvedValue({ data: { signedUrl: 'https://signed.url' }, error: null }),
+  };
+  return {
+    supabaseAdmin: {
+      storage: {
+        from: vi.fn().mockReturnValue(client),
+      },
     },
-  },
-  STORAGE_BUCKET: 'uploads',
-}));
+    STORAGE_BUCKET: 'uploads',
+  };
+});
 
 // ── NextAuth mock ────────────────────────────────────────────────────────────
 vi.mock('@/auth', () => ({

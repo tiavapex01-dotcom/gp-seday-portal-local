@@ -15,3 +15,7 @@ private_uploads/
 # OS
 .DS_Store
 Thumbs.db
+
+# Test coverage
+coverage/
+*.lcov
