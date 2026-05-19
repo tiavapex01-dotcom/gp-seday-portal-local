@@ -34,7 +34,10 @@ export default function Sidebar({ user }: SidebarProps) {
       ? [{ href: "/files/upload", label: "Upload", icon: "⬆️" }]
       : []),
     ...(user.role === "admin"
-      ? [{ href: "/admin", label: "Administração", icon: "⚙️" }]
+      ? [
+          { href: "/admin",            label: "Administração", icon: "⚙️" },
+          { href: "/admin/monitoring", label: "Monitoramento",  icon: "📊" },
+        ]
       : []),
   ];
 

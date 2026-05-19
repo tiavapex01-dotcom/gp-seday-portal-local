@@ -27,6 +27,7 @@ vi.mock('@/lib/prisma', () => ({
       update:     vi.fn(),
       updateMany: vi.fn(),
       count:      vi.fn(),
+      groupBy:    vi.fn(),
     },
     communication: {
       findMany:   vi.fn(),
@@ -36,6 +37,7 @@ vi.mock('@/lib/prisma', () => ({
       update:     vi.fn(),
       delete:     vi.fn(),
       count:      vi.fn(),
+      groupBy:    vi.fn(),
     },
     file: {
       findMany:   vi.fn(),
@@ -44,6 +46,8 @@ vi.mock('@/lib/prisma', () => ({
       create:     vi.fn(),
       delete:     vi.fn(),
       count:      vi.fn(),
+      aggregate:  vi.fn(),
+      groupBy:    vi.fn(),
     },
     folder: {
       findMany:   vi.fn(),
@@ -52,6 +56,7 @@ vi.mock('@/lib/prisma', () => ({
       create:     vi.fn(),
       update:     vi.fn(),
       delete:     vi.fn(),
+      count:      vi.fn(),
     },
   },
 }));
