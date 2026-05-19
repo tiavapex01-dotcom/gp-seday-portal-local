@@ -58,6 +58,23 @@ vi.mock('@/lib/prisma', () => ({
       delete:     vi.fn(),
       count:      vi.fn(),
     },
+    content: {
+      findMany:   vi.fn(),
+      findFirst:  vi.fn(),
+      findUnique: vi.fn(),
+      create:     vi.fn(),
+      update:     vi.fn(),
+      delete:     vi.fn(),
+      count:      vi.fn(),
+      aggregate:  vi.fn(),
+      groupBy:    vi.fn(),
+    },
+    contentCategory: {
+      findMany:   vi.fn(),
+      findFirst:  vi.fn(),
+      findUnique: vi.fn(),
+      create:     vi.fn(),
+    },
   },
 }));
 
@@ -76,7 +93,8 @@ vi.mock('@/lib/supabase', () => {
         from: vi.fn().mockReturnValue(client),
       },
     },
-    STORAGE_BUCKET: 'uploads',
+    STORAGE_BUCKET:  'uploads',
+    CONTENT_BUCKET:  'content',
   };
 });
 

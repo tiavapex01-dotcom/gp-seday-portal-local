@@ -11,7 +11,7 @@ import { auth } from "@/auth";
 import { NextResponse } from "next/server";
 
 // Rotas que exigem autenticação
-const PROTECTED_PATHS = ["/dashboard", "/files", "/communications", "/admin"];
+const PROTECTED_PATHS = ["/dashboard", "/files", "/communications", "/admin", "/content"];
 // Rotas exclusivas para admin
 const ADMIN_PATHS = ["/admin"];
 // Rotas para admin e manager

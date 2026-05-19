@@ -1,9 +1,9 @@
 /**
  * @context supabase.ts
  * @what    Supabase service-role client for server-side Storage operations
- * @purpose Create/delete/download files in the private "uploads" bucket
+ * @purpose Create/delete/download files in the private "uploads" and "content" buckets
  * @depends SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY env vars
- * @usedby  file.service.ts only
+ * @usedby  file.service.ts, content.service.ts
  * @rules   NEVER import supabaseAdmin in client components or expose the key to the browser
  * @layer   lib
  */
@@ -17,3 +17,7 @@ export const supabaseAdmin = createClient(
 );
 
 export const STORAGE_BUCKET = "uploads";
+
+// Bucket para a Central de Conteúdo — deve ser criado MANUALMENTE no Supabase Dashboard
+// Tipo: privado · Policies: mesmas do bucket "uploads"
+export const CONTENT_BUCKET = "content";

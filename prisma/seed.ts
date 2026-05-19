@@ -77,6 +77,27 @@ async function main() {
   console.log("   admin@gruposeday.com.br            → Admin@123    (admin)");
   console.log("   manager.avapex@gruposeday.com.br   → Manager@123  (manager)");
   console.log("   colaborador@gruposeday.com.br      → Employee@123 (employee)");
+
+  // ── Central de Conteúdo — categorias padrão ──────────────────────────────
+  const defaultCategories = [
+    { name: "Logos e Marcas",               slug: "logos",            description: "Logos oficiais em todos os formatos",                   icon: "🎨", order: 1 },
+    { name: "Assinatura de E-mail",          slug: "assinatura-email", description: "Templates de assinatura para e-mail corporativo",       icon: "✉️", order: 2 },
+    { name: "Material para Redes Sociais",   slug: "redes-sociais",    description: "Banners, posts e stories para redes sociais",           icon: "📱", order: 3 },
+    { name: "Documentos e Templates",        slug: "documentos",       description: "Modelos de documentos e apresentações",                 icon: "📄", order: 4 },
+    { name: "Vídeos Institucionais",         slug: "videos",           description: "Vídeos institucionais e de apresentação",               icon: "🎬", order: 5 },
+    { name: "Kit Mídia Completo",            slug: "kit-midia",        description: "Pacote completo com todos os materiais da marca",       icon: "📦", order: 6 },
+  ];
+
+  for (const company of COMPANIES) {
+    for (const cat of defaultCategories) {
+      await prisma.contentCategory.upsert({
+        where:  { id: `${company}-${cat.slug}` },
+        update: {},
+        create: { id: `${company}-${cat.slug}`, ...cat, company },
+      });
+    }
+  }
+  console.log(`✅ ${defaultCategories.length * COMPANIES.length} categorias da Central de Conteúdo criadas (${COMPANIES.join(", ")}).`);
 }
 
 main()

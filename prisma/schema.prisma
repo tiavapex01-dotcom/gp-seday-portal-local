@@ -22,9 +22,10 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  uploadedFiles   File[]          @relation("UploadedBy")
-  communications  Communication[] @relation("CreatedBy")
-  createdFolders  Folder[]        @relation("FolderCreatedBy")
+  uploadedFiles    File[]           @relation("UploadedBy")
+  communications   Communication[]  @relation("CreatedBy")
+  createdFolders   Folder[]         @relation("FolderCreatedBy")
+  uploadedContents Content[]        @relation("ContentUploadedBy")
 
   @@index([company])
   @@index([role])
@@ -98,4 +99,53 @@ model Communication {
   @@index([pinned])
   @@index([sector])
   @@index([published, createdAt])
+}
+
+// ── Central de Conteúdo ───────────────────────────────────────────────────────
+
+model ContentCategory {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String
+  description String?
+  icon        String?  // emoji
+  order       Int      @default(0)
+  company     String   // "AVAPEX" | "SEDAY" | "INNOMACH" | "ALL"
+  createdAt   DateTime @default(now())
+
+  contents    Content[]
+
+  @@index([company])
+  @@index([slug])
+}
+
+model Content {
+  id            String   @id @default(cuid())
+  title         String
+  description   String?
+  type          String   // "image"|"video"|"document"|"template"|"signature"|"social"
+  company       String   // "AVAPEX" | "SEDAY" | "INNOMACH"
+  tags          String[] // ex: ["logo","horizontal","fundo-branco"]
+  storedName    String   // UUID filename in Supabase
+  path          String   // full path in bucket
+  mimeType      String
+  size          Int      // bytes
+  thumbnailPath String?  // preview for images/videos (optional)
+  published     Boolean  @default(true)
+  featured      Boolean  @default(false)
+  downloadCount Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  categoryId   String
+  category     ContentCategory @relation(fields: [categoryId], references: [id])
+
+  uploadedById String
+  uploadedBy   User    @relation("ContentUploadedBy", fields: [uploadedById], references: [id])
+
+  @@index([company])
+  @@index([type])
+  @@index([categoryId])
+  @@index([featured])
+  @@index([published])
 }

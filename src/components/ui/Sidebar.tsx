@@ -29,7 +29,8 @@ export default function Sidebar({ user }: SidebarProps) {
   const links = [
     { href: "/dashboard", label: "Dashboard", icon: "🏠" },
     { href: "/communications", label: "Comunicados", icon: "📢" },
-    { href: "/files", label: "Arquivos", icon: "📁" },
+    { href: "/files",   label: "Arquivos",            icon: "📁" },
+    { href: "/content", label: "Central de Conteúdo", icon: "🗂️" },
     ...(user.role !== "employee"
       ? [{ href: "/files/upload", label: "Upload", icon: "⬆️" }]
       : []),
@@ -37,6 +38,7 @@ export default function Sidebar({ user }: SidebarProps) {
       ? [
           { href: "/admin",            label: "Administração", icon: "⚙️" },
           { href: "/admin/monitoring", label: "Monitoramento",  icon: "📊" },
+          { href: "/admin/content",    label: "Gerenciar",      icon: "📂" },
         ]
       : []),
   ];
