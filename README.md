@@ -3,7 +3,7 @@
 ![Node.js](https://img.shields.io/badge/Node.js-20%2B-339933?logo=nodedotjs&logoColor=white)
 ![Next.js](https://img.shields.io/badge/Next.js-16.2.6-000000?logo=nextdotjs&logoColor=white)
 ![Vercel](https://img.shields.io/badge/Deploy-Vercel-000000?logo=vercel&logoColor=white)
-![Tests](https://img.shields.io/badge/Testes-262%20passando-22c55e?logo=vitest&logoColor=white)
+![Tests](https://img.shields.io/badge/Testes-334%20passando-22c55e?logo=vitest&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)
 ![License](https://img.shields.io/badge/Licença-Privado-gray)
 
