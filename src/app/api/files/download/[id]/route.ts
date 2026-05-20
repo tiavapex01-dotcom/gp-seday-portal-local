@@ -33,12 +33,27 @@ export async function GET(
 
     const safeFileName = encodeURIComponent(file.name);
 
+    const INLINE_TYPES = new Set(["application/pdf", "image/jpeg", "image/png", "image/webp", "image/gif", "image/svg+xml"]);
+    const ALLOWED_TYPES = new Set([
+      ...INLINE_TYPES,
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "application/vnd.ms-excel",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "application/vnd.ms-powerpoint",
+      "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+      "text/plain",
+      "video/mp4",
+      "video/webm",
+    ]);
+    const contentType = ALLOWED_TYPES.has(file.mimeType) ? file.mimeType : "application/octet-stream";
+
     return new NextResponse(data, {
       status: 200,
       headers: {
-        "Content-Type":        file.mimeType,
+        "Content-Type":        contentType,
         "Content-Length":      String(file.size),
-        "Content-Disposition": file.mimeType.startsWith("image/") || file.mimeType === "application/pdf"
+        "Content-Disposition": INLINE_TYPES.has(contentType)
           ? `inline; filename*=UTF-8''${safeFileName}`
           : `attachment; filename*=UTF-8''${safeFileName}`,
         "Cache-Control":       "no-store",

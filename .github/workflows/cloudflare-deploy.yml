@@ -25,6 +25,19 @@ jobs:
       - name: Instalar dependências
         run: npm ci
 
+      - name: Auditoria de segurança de dependências
+        run: npm audit --audit-level=high
+
+      - name: TypeScript — verificação de tipos
+        run: npx tsc --noEmit
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DIRECT_URL: ${{ secrets.DIRECT_URL }}
+          NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+          NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+
       - name: Build
         run: npm run build
         env:

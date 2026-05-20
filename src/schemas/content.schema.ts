@@ -23,12 +23,12 @@ export type ContentType = (typeof CONTENT_TYPES)[number];
 
 // ── Content CRUD ──────────────────────────────────────────────────────────────
 export const createContentSchema = z.object({
-  title:       z.string().min(2, "Título obrigatório (mínimo 2 caracteres)"),
-  description: z.string().optional(),
+  title:       z.string().min(2, "Título obrigatório (mínimo 2 caracteres)").max(255).trim(),
+  description: z.string().max(2000).trim().optional(),
   type:        z.enum(CONTENT_TYPES),
   company:     z.enum(COMPANIES),
   categoryId:  z.string().min(1, "Categoria obrigatória"),
-  tags:        z.array(z.string()).default([]),
+  tags:        z.array(z.string().min(1).max(50).trim()).default([]),
   featured:    z.boolean().default(false),
   published:   z.boolean().default(true),
 });
@@ -37,10 +37,11 @@ export const updateContentSchema = createContentSchema.partial();
 
 // ── Category ──────────────────────────────────────────────────────────────────
 export const createCategorySchema = z.object({
-  name:        z.string().min(2, "Nome obrigatório"),
-  slug:        z.string().min(2).regex(/^[a-z0-9-]+$/, "Slug deve conter apenas letras minúsculas, números e hífens"),
-  description: z.string().optional(),
-  icon:        z.string().optional(),
+  name:        z.string().min(2, "Nome obrigatório").max(100).trim(),
+  slug:        z.string().min(2).max(100).trim()
+    .regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, "Slug deve conter apenas letras minúsculas, números e hífens"),
+  description: z.string().max(500).trim().optional(),
+  icon:        z.string().max(10).optional(),
   order:       z.number().int().default(0),
   company:     z.enum(COMPANIES),
 });

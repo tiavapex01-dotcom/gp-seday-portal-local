@@ -11,7 +11,7 @@ import { z } from "zod";
 
 export const uploadFileSchema = z.object({
   folderId:    z.string().min(1, "Pasta é obrigatória"),
-  description: z.string().optional().nullable(),
+  description: z.string().max(500).trim().optional().nullable(),
 });
 
 export const listFilesSchema = z.object({

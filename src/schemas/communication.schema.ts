@@ -10,13 +10,13 @@
 import { z } from "zod";
 
 export const createCommunicationSchema = z.object({
-  title:        z.string().min(1, "Título é obrigatório").max(200),
-  content:      z.string().min(1, "Conteúdo é obrigatório"),
+  title:        z.string().min(1, "Título é obrigatório").max(200).trim(),
+  content:      z.string().min(1, "Conteúdo é obrigatório").max(10000).trim(),
   company:      z.enum(["AVAPEX", "SEDAY", "INNOMACH", "ALL"]),
-  sector:       z.string().min(1, "Setor é obrigatório"),
+  sector:       z.string().min(1, "Setor é obrigatório").max(100).trim(),
   pinned:       z.boolean().optional().default(false),
-  contactPhone: z.string().optional().nullable(),
-  contactEmail: z.string().email("E-mail de contato inválido").optional().nullable()
+  contactPhone: z.string().max(30).optional().nullable(),
+  contactEmail: z.string().email("E-mail de contato inválido").max(255).optional().nullable()
     .or(z.literal("").transform(() => null)),
 });
 
