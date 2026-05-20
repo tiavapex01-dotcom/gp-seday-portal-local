@@ -1,9 +1,9 @@
 /**
  * @context monitoring.service.ts
- * @what    Coleta métricas de uso de storage, banco e APIs
+ * @what    Coleta métricas de uso de storage, banco, APIs e segurança
  * @purpose Fornecer dados para a página de monitoramento do admin
  * @depends prisma
- * @usedby  api/monitoring/route.ts
+ * @usedby  admin/monitoring/page.tsx
  * @rules   Somente admin acessa. Nunca expor dados sensíveis.
  * @layer   service
  */
@@ -107,6 +107,40 @@ export async function getDatabaseMetrics() {
     folders: { total: totalFolders, root: rootFolders },
     files:   { total: totalFiles },
     recentActivity,
+  };
+}
+
+export async function getSecurityMetrics() {
+  const last24h = new Date(Date.now() - 24 * 60 * 60 * 1000);
+  const last7d  = new Date(Date.now() - 7  * 24 * 60 * 60 * 1000);
+
+  // Tentativas de login com falha (usuário não encontrado ou senha errada)
+  // Proxy: usuários inativos que tentaram login — sem tabela dedicada de auditoria ainda
+  const [inactiveUsers, newUsersLast7d, newUsersLast24h] = await Promise.all([
+    prisma.user.count({ where: { active: false } }),
+    prisma.user.count({ where: { createdAt: { gte: last7d  } } }),
+    prisma.user.count({ where: { createdAt: { gte: last24h } } }),
+  ]);
+
+  return {
+    sentry: {
+      configured: !!process.env.NEXT_PUBLIC_SENTRY_DSN,
+      // Mascara o DSN — expõe apenas o host de ingest (sem chave pública)
+      dsnHost: process.env.NEXT_PUBLIC_SENTRY_DSN
+        ? new URL(process.env.NEXT_PUBLIC_SENTRY_DSN).host
+        : null,
+    },
+    rateLimit: {
+      // Rate limiting ainda não implementado — seção preparada para dados futuros
+      implemented:   false,
+      blocksLast24h: 0,
+      blocksLast7d:  0,
+    },
+    users: {
+      inactive:       inactiveUsers,
+      newLast24h:     newUsersLast24h,
+      newLast7d:      newUsersLast7d,
+    },
   };
 }
 

@@ -14,6 +14,7 @@ import {
   getStorageMetrics,
   getDatabaseMetrics,
   getApiMetrics,
+  getSecurityMetrics,
 } from "@/services/monitoring.service";
 import StorageBar  from "@/components/ui/monitoring/StorageBar";
 import MetricCard  from "@/components/ui/monitoring/MetricCard";
@@ -79,10 +80,11 @@ export default async function MonitoringPage() {
   const session = await auth();
   if (!session?.user || session.user.role !== "admin") redirect("/dashboard");
 
-  const [storage, database, apis] = await Promise.all([
+  const [storage, database, apis, security] = await Promise.all([
     getStorageMetrics(),
     getDatabaseMetrics(),
     getApiMetrics(),
+    getSecurityMetrics(),
   ]);
 
   const generatedAt = new Date();
@@ -347,6 +349,125 @@ export default async function MonitoringPage() {
           <p className="text-xs text-gray-400 text-center mt-3">
             Passe o mouse sobre as barras para ver detalhes
           </p>
+        </div>
+      </section>
+
+      {/* ════════════════════════════════════════
+          SEÇÃO 5 — SEGURANÇA
+      ════════════════════════════════════════ */}
+      <section>
+        <h2 className="text-lg font-semibold text-gray-700 mb-4">🔒 Segurança</h2>
+
+        {/* Cards de resumo */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+          <MetricCard
+            icon="🚫"
+            title="Bloqueios Rate Limit (24h)"
+            value={security.rateLimit.implemented ? security.rateLimit.blocksLast24h : "—"}
+            subtitle={security.rateLimit.implemented ? "tentativas bloqueadas" : "pendente de implementação"}
+            accent="red"
+          />
+          <MetricCard
+            icon="🛡️"
+            title="Bloqueios Rate Limit (7 dias)"
+            value={security.rateLimit.implemented ? security.rateLimit.blocksLast7d : "—"}
+            subtitle={security.rateLimit.implemented ? "tentativas bloqueadas" : "pendente de implementação"}
+            accent="red"
+          />
+          <MetricCard
+            icon="👤"
+            title="Novos usuários (7 dias)"
+            value={security.users.newLast7d}
+            subtitle={`${security.users.newLast24h} nas últimas 24h · ${security.users.inactive} inativos`}
+            accent="yellow"
+          />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Status do Sentry */}
+          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+            <h3 className="text-sm font-semibold text-gray-600 mb-4">
+              🐛 Erros de Aplicação (Sentry)
+            </h3>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-600">Status do SDK</span>
+                {security.sentry.configured ? (
+                  <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full">
+                    <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full inline-block" />
+                    Ativo
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-500 bg-gray-100 px-2.5 py-1 rounded-full">
+                    <span className="w-1.5 h-1.5 bg-gray-400 rounded-full inline-block" />
+                    DSN não configurado
+                  </span>
+                )}
+              </div>
+              {security.sentry.dsnHost && (
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-600">Ingest</span>
+                  <code className="text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded">
+                    {security.sentry.dsnHost}
+                  </code>
+                </div>
+              )}
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-600">Tunnel route</span>
+                <code className="text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded">
+                  /sentry-tunnel
+                </code>
+              </div>
+              <div className="pt-2 border-t border-gray-100">
+                <p className="text-xs text-gray-400">
+                  Para ver erros capturados, acesse o painel do Sentry.
+                  Erros de Server Components, API routes e cliente são capturados automaticamente.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Rate Limiting — status */}
+          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+            <h3 className="text-sm font-semibold text-gray-600 mb-4">
+              ⚡ Proteção contra Força Bruta (Rate Limiting)
+            </h3>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-600">Status</span>
+                {security.rateLimit.implemented ? (
+                  <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full">
+                    <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full inline-block" />
+                    Implementado
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-amber-700 bg-amber-50 px-2.5 py-1 rounded-full">
+                    <span className="w-1.5 h-1.5 bg-amber-500 rounded-full inline-block" />
+                    Pendente
+                  </span>
+                )}
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-600">Bloqueios (24h)</span>
+                <span className="text-sm font-semibold text-gray-800">
+                  {security.rateLimit.implemented ? security.rateLimit.blocksLast24h : "—"}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-600">Bloqueios (7 dias)</span>
+                <span className="text-sm font-semibold text-gray-800">
+                  {security.rateLimit.implemented ? security.rateLimit.blocksLast7d : "—"}
+                </span>
+              </div>
+              <div className="pt-2 border-t border-gray-100">
+                <p className="text-xs text-gray-400">
+                  Recomendado: instalar{" "}
+                  <code className="bg-gray-100 px-1 rounded">@upstash/ratelimit</code>{" "}
+                  com Redis para limitar tentativas de login por IP.
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
     </div>
