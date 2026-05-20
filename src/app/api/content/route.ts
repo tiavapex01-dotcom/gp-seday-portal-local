@@ -18,6 +18,7 @@ import {
   createContent,
   validateContentFile,
 } from "@/services/content.service";
+import { validateFile }                          from "@/services/file.service";
 import { ZodError }                              from "zod/v4";
 
 export async function GET(req: NextRequest) {
