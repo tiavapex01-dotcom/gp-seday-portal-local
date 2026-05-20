@@ -11,7 +11,9 @@
 
 ## Sobre o Projeto
 
-Portal intranet corporativo para os funcionários das empresas do **Grupo Seday**. Centraliza comunicados internos, gerenciamento de arquivos por setor, kit de marca e materiais de identidade visual em um único ambiente seguro, com controle de acesso por empresa e papel (role).
+Portal intranet corporativo para os funcionários das três empresas que compõem o **Grupo Seday** — **AVAPEX**, **SEDAY** e **INNOMACH**. O grupo é a entidade que reúne as empresas; cada empresa opera de forma independente dentro do portal, com seus próprios arquivos, comunicados e ativos de marca.
+
+O sistema centraliza comunicados internos, gerenciamento de arquivos por setor, kit de marca e materiais de identidade visual em um único ambiente seguro, com controle de acesso por empresa e papel (role).
 
 **Problemas que resolve:**
 - Dispersão de arquivos em drives e e-mails — substituído por um GED hierárquico por setor
@@ -21,13 +23,17 @@ Portal intranet corporativo para os funcionários das empresas do **Grupo Seday*
 
 ---
 
-## Empresas Suportadas
+## Empresas do Grupo
+
+O **Grupo Seday** é a holding que reúne três empresas distintas. O portal atende funcionários das três unidades, mantendo isolamento total de dados entre elas.
 
 | Empresa | Descrição |
 |---------|-----------|
-| **AVAPEX** | Unidade de aviação |
-| **SEDAY** | Holding do grupo |
+| **AVAPEX** | Unidade de aviação do grupo |
+| **SEDAY** | Uma das três empresas operacionais (não confundir com o Grupo Seday) |
 | **INNOMACH** | Unidade de tecnologia e inovação |
+
+> **Atenção:** "Grupo Seday" é o grupo como um todo. "SEDAY" (em maiúsculas no sistema) é uma das três empresas que o compõem — AVAPEX, SEDAY e INNOMACH.
 
 ### Papéis (Roles)
 
