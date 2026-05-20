@@ -11,7 +11,8 @@
 import { auth }              from "@/auth";
 import { redirect }          from "next/navigation";
 import Link                  from "next/link";
-import { ROLES }             from "@/lib/permissions";
+import { ROLES, COMPANIES }  from "@/lib/permissions";
+import type { Company }      from "@/lib/permissions";
 import { listContent, listCategories } from "@/services/content.service";
 import ContentCard           from "@/components/ui/content/ContentCard";
 import { ContentTypeBadge }  from "@/components/ui/content/ContentTypeIcon";
@@ -37,7 +38,9 @@ export default async function ContentPage({
 
   const sp          = await searchParams;
   const isAdmin     = session.user.role === ROLES.ADMIN;
-  const company     = isAdmin ? (sp.company ?? undefined) : session.user.company;
+  const rawCompany  = sp.company;
+  const spCompany   = COMPANIES.includes(rawCompany as Company) ? (rawCompany as Company) : undefined;
+  const company     = isAdmin ? spCompany : (session.user.company as Company | undefined);
   const filterType  = (sp.type ?? undefined) as ContentType | undefined;
   const filterCat   = sp.category ?? undefined;
   const search      = sp.search ?? undefined;
