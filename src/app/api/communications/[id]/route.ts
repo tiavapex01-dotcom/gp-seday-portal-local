@@ -31,11 +31,7 @@ export async function DELETE(
     const comm   = await getCommunicationById(id);
     if (!comm) return notFound("Comunicado");
 
-    if (
-      session.user.role === "manager" &&
-      comm.createdById !== session.user.id &&
-      comm.company     !== session.user.company
-    ) {
+    if (session.user.role === "manager" && comm.createdById !== session.user.id) {
       return forbidden();
     }
 
