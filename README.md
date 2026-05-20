@@ -27,11 +27,11 @@ O sistema centraliza comunicados internos, gerenciamento de arquivos por setor, 
 
 O **Grupo Seday** é a holding que reúne três empresas distintas. O portal atende funcionários das três unidades, mantendo isolamento total de dados entre elas.
 
-| Empresa | Descrição |
-|---------|-----------|
-| **AVAPEX** | Unidade de aviação do grupo |
-| **SEDAY** | Uma das três empresas operacionais (não confundir com o Grupo Seday) |
-| **INNOMACH** | Unidade de tecnologia e inovação |
+| Empresa |
+|---------|
+| **AVAPEX** |
+| **SEDAY** |
+| **INNOMACH** |
 
 > **Atenção:** "Grupo Seday" é o grupo como um todo. "SEDAY" (em maiúsculas no sistema) é uma das três empresas que o compõem — AVAPEX, SEDAY e INNOMACH.
 
